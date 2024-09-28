@@ -1,0 +1,15 @@
+﻿################################################################################
+# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+################################################################################
+
+/.vs
+/Binaries/Win64
+/Content/Characters
+/Content/LevelPrototyping
+/Content/StarterContent
+/Content/__ExternalActors__/ThirdPerson/Maps/ThirdPersonMap
+/Content/__ExternalObjects__/ThirdPerson/Maps/ThirdPersonMap
+/Intermediate
+/Saved
+/.vsconfig
+/InventoryTest.sln
