@@ -7,9 +7,15 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "GameFramework/Controller.h"
+#include "Kismet/GameplayStatics.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
+#include "InventorySystem/Public/Items/WorldItem.h"
+#include "InventorySystem/Public/Widgets/PrimaryHUDWidget.h"
+#include "InventorySystem/Public/Inventory/InventoryComponent.h"
+#include "DrawDebugHelpers.h"
+
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
@@ -52,12 +58,31 @@ AInventoryTestCharacter::AInventoryTestCharacter()
 
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
+	PlayerInventoryComponent = CreateDefaultSubobject<UInventoryComponent>(TEXT("PlayerInventoryComponent"));
 }
 
 void AInventoryTestCharacter::BeginPlay()
 {
 	// Call the base class  
 	Super::BeginPlay();
+
+	// Create primary HUD
+	if (PrimaryHUDWidgetClass)
+	{
+		// Create the widget
+		PrimaryHUDWidget = CreateWidget<UPrimaryHUDWidget>(GetWorld(), PrimaryHUDWidgetClass);
+
+		// Check if widget was created successfully
+		if (PrimaryHUDWidget)
+		{
+			// Add it to the viewport
+			PrimaryHUDWidget->AddToViewport();
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemplateCharacter, Warning, TEXT("PrimaryHUDWidgetClass is not set"));
+	}
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -86,6 +111,12 @@ void AInventoryTestCharacter::SetupPlayerInputComponent(UInputComponent* PlayerI
 
 		// Looking
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AInventoryTestCharacter::Look);
+
+		// Interacting
+		EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Triggered, this, &AInventoryTestCharacter::Interact);
+
+		// Open Inventory Menu
+		EnhancedInputComponent->BindAction(OpenInventoryAction, ETriggerEvent::Triggered, this, &AInventoryTestCharacter::OpenInventory);
 	}
 	else
 	{
@@ -128,3 +159,99 @@ void AInventoryTestCharacter::Look(const FInputActionValue& Value)
 		AddControllerPitchInput(LookAxisVector.Y);
 	}
 }
+
+void AInventoryTestCharacter::Interact(const FInputActionValue& Value)
+{
+	UE_LOG(LogTemp, Log, TEXT("Interact action is called."));
+
+	// Trace a BaseItem
+	FHitResult ItemTraceResult;
+
+
+	//FVector Start = ViewportCamera->GetComponentLocation();
+	FRotator CameraRotation = FollowCamera->GetComponentRotation();
+	FVector Start = GetMesh()->GetSocketLocation("head") + (CameraRotation.Vector() * 10.0f);
+
+	FVector End = (CameraRotation.Vector() * 150.0f) + Start;
+	FCollisionQueryParams CollisionQueryParamsLower;
+	CollisionQueryParamsLower.AddIgnoredActor(this);
+	CollisionQueryParamsLower.AddIgnoredComponent(GetMesh());
+	GetWorld()->LineTraceSingleByChannel(ItemTraceResult, Start, End, ECollisionChannel::ECC_Visibility);
+	DrawDebugLine(GetWorld(), Start, End, FColor::Yellow, false, 1.0f, 0, 3.0f); // Line thickness is 5.0f
+
+	if (ItemTraceResult.bBlockingHit)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Hit"));
+		DrawDebugSphere(GetWorld(), ItemTraceResult.Location, 15.f, 12, FColor::Red, false, 5.f);
+
+		AWorldItem* HitItem = Cast<AWorldItem>(ItemTraceResult.GetActor());
+		UE_LOG(LogTemp, Warning, TEXT("Hit WorldItem %s"), *GetNameSafe(ItemTraceResult.GetComponent()));
+		if (HitItem)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Hit WorldItem"));
+			bool success = HitItem->Interact(PlayerInventoryComponent);
+		}
+	}
+}
+
+void AInventoryTestCharacter::OpenInventory(const FInputActionValue& Value)
+{
+	UE_LOG(LogTemp, Warning, TEXT("Inventory opened"));
+	APlayerController* PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
+	if (PlayerController)
+	{
+		PlayerController->bShowMouseCursor = true;
+
+		FInputModeUIOnly InputMode;
+		InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
+
+		if (PrimaryHUDWidget)
+		{
+			InputMode.SetWidgetToFocus(PrimaryHUDWidget->TakeWidget());
+		}
+
+		PlayerController->SetInputMode(InputMode);
+	}
+
+	if (PrimaryHUDWidget)
+	{
+		PrimaryHUDWidget->SetFocus();
+	}
+
+	OpenPlayerInventory();
+}
+
+#pragma region InteractHUDInterfaceImplementation
+void AInventoryTestCharacter::OpenPlayerInventory()
+{
+	UE_LOG(LogTemp, Warning, TEXT("OpenPlayerInventory is called."));
+
+
+	UpdateInventoryHUD(PlayerInventoryComponent);
+
+	if (PrimaryHUDWidget)
+	{
+		PrimaryHUDWidget->ShowPlayerInventory(true);
+	}
+}
+
+void AInventoryTestCharacter::UpdateInventoryHUD(const UInventoryComponent* InventoryComponent)
+{
+	UE_LOG(LogTemp, Warning, TEXT("UpdateInventoryHUD is called."));
+	if (PrimaryHUDWidget)
+	{
+		if (InventoryComponent)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("InventoryComponent is not NONE"));
+		}
+		PrimaryHUDWidget->UpdateInventory(InventoryComponent);
+	}
+}
+
+void AInventoryTestCharacter::RemoveItem(F_InventoryItem* Item)
+{
+	UE_LOG(LogTemp, Warning, TEXT("AMainCharacter::RemoveItem is called"));
+	PlayerInventoryComponent->RemoveItem(Item);
+}
+
+#pragma endregion InteractHUDInterfaceImplementation
