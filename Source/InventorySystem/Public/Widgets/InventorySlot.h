@@ -35,7 +35,6 @@ public:
 	
 
 public:
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(ExposeOnSpawn = "true"))
 	F_InventoryItem Item;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(ExposeOnSpawn = "true"))

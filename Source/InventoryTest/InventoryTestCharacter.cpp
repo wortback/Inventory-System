@@ -235,9 +235,9 @@ void AInventoryTestCharacter::OpenPlayerInventory()
 	}
 }
 
-void AInventoryTestCharacter::UpdateInventoryHUD(const UInventoryComponent* InventoryComponent)
+void AInventoryTestCharacter::UpdateInventoryHUD(UInventoryComponent* InventoryComponent)
 {
-	UE_LOG(LogTemp, Warning, TEXT("UpdateInventoryHUD is called."));
+	UE_LOG(LogTemplateCharacter, Warning, TEXT("UpdateInventoryHUD is called."));
 	if (PrimaryHUDWidget)
 	{
 		if (InventoryComponent)
@@ -245,6 +245,15 @@ void AInventoryTestCharacter::UpdateInventoryHUD(const UInventoryComponent* Inve
 			UE_LOG(LogTemp, Warning, TEXT("InventoryComponent is not NONE"));
 		}
 		PrimaryHUDWidget->UpdateInventory(InventoryComponent);
+	}
+}
+
+void AInventoryTestCharacter::UpdateInventoryHUD()
+{
+	UE_LOG(LogTemp, Warning, TEXT("UpdateInventoryHUD is called."));
+	if (PrimaryHUDWidget)
+	{
+		PrimaryHUDWidget->UpdateInventory(PlayerInventoryComponent);
 	}
 }
 

@@ -7,6 +7,8 @@
 #include "GameFramework/Character.h"
 
 
+DEFINE_LOG_CATEGORY(LogInventoryComponent);
+
 
 UInventoryComponent::UInventoryComponent()
 {
@@ -31,8 +33,8 @@ void UInventoryComponent::UpdateInventoryHUD()
 
 bool UInventoryComponent::ProcessItem(F_InventoryItem* Item)
 {
-	int ItemIndexLocation = FindAvailableLocation(Item);
-	UE_LOG(LogTemp, Warning, TEXT("Found available location at Index %d"), ItemIndexLocation);
+	int32 ItemIndexLocation = FindAvailableLocation(Item);
+	UE_LOG(LogInventoryComponent, Warning, TEXT("Found available location at Index %d"), ItemIndexLocation);
 	if (ItemIndexLocation >= 0)
 	{
 		F_InventoryItem* AddedItem = AddItem(Item, ItemIndexLocation);
@@ -48,7 +50,7 @@ bool UInventoryComponent::ProcessItem(F_InventoryItem* Item)
 	}
 	else
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Inventory is full"));
+		UE_LOG(LogInventoryComponent, Warning, TEXT("Inventory is full"));
 		return false;
 	}
 
@@ -58,22 +60,21 @@ bool UInventoryComponent::ProcessItem(F_InventoryItem* Item)
 
 F_InventoryItem* UInventoryComponent::AddItem(F_InventoryItem* Item, int IndexLocation)
 {
-	F_InventoryItem* ItemAtLocation = &Items[IndexLocation];
+	UE_LOG(LogInventoryComponent, Log, TEXT("Adding a new item of type %s"), *(Item->ItemTypeToString()));
+
+	F_InventoryItem* ItemAtLocation = &GetItemsForItemType(Item->ItemType)[IndexLocation];
 	UBaseItem* DefaultItem = Cast<UBaseItem>(UBaseItem::StaticClass()->GetDefaultObject(true));
-	int NewQuantity = ItemAtLocation->Quantity + Item->Quantity;
-
-	int QuantityClamped = FMath::Clamp(NewQuantity, 0, DefaultItem->StackSize);
-	int DeltaQuantity = NewQuantity - QuantityClamped;
-
-	UE_LOG(LogTemp, Warning, TEXT("NewQuantity %d"), NewQuantity);
-	UE_LOG(LogTemp, Warning, TEXT("QuantityClamped %d"), QuantityClamped);
-	UE_LOG(LogTemp, Warning, TEXT("DeltaQuantity %d"), DeltaQuantity);
+	
+	int32 NewQuantity = ItemAtLocation->Quantity + Item->Quantity;
+	int32 QuantityClamped = FMath::Clamp(NewQuantity, 0, DefaultItem->StackSize);
+	int32 DeltaQuantity = NewQuantity - FMath::Clamp(NewQuantity, 0, DefaultItem->StackSize);
 
 	// Update member variables on the item st this particular slot
 	ItemAtLocation->Quantity = QuantityClamped;
 	ItemAtLocation->ItemClass = Item->ItemClass;
 	ItemAtLocation->OwningInventory = this;
 	ItemAtLocation->IndexLocation = IndexLocation;
+	ItemAtLocation->ItemType = Item->ItemType;
 
 	// A new F_InventoryItem Object that stores DeltaQuantity
 	// if it is bigger than 0, will attempt to store the remaining copies of the item in a separate slot
@@ -85,38 +86,64 @@ F_InventoryItem* UInventoryComponent::AddItem(F_InventoryItem* Item, int IndexLo
 
 bool UInventoryComponent::RemoveItem(F_InventoryItem* Item)
 {
-	F_InventoryItem* ItemAtLocation = &Items[Item->IndexLocation];
+	F_InventoryItem* ItemAtLocation = &GetItemsForItemType(Item->ItemType)[Item->IndexLocation];
 	ItemAtLocation->ItemClass = UBaseItem::StaticClass();
 	ItemAtLocation->OwningInventory = nullptr;
 	ItemAtLocation->Quantity = 0;
+	ItemAtLocation->ItemType = EItemType::EIT_None;
 
 	return true;
 }
 
+TArray<F_InventoryItem>& UInventoryComponent::GetItemsForItemType(EItemType ItemType)
+{
+	switch (ItemType)
+	{
+	case EItemType::EIT_Armour:
+	case EItemType::EIT_Weapon:
+		return Equipment;
+	case EItemType::EIT_Quest:
+		return QuestItems;
+	case EItemType::EIT_Consumable:
+		return Consumables;
+	case EItemType::EIT_Miscellaneous:
+		return MiscellaneousItems;
+	case EItemType::EIT_None:
+	default:
+		UE_LOG(LogInventoryComponent, Warning, TEXT("Cannot get the inventory section for an item since the item is of type EIT_None."));
+		return Equipment;
+	}
+}
 
 int UInventoryComponent::FindAvailableLocation(F_InventoryItem* Item)
 {
+	UE_LOG(LogInventoryComponent, Log, TEXT("Searching for an available location..."));
+
 	// Case 1: There's another Item of the same class present in the inventory and it's quantity is less than the stack size
-	for (F_InventoryItem Element : Items)
+	for (const F_InventoryItem& Element : GetItemsForItemType(Item->ItemType))
 	{
 		if (Element.ItemClass == Item->ItemClass)
 		{
 			UBaseItem* DefaultItem = Cast<UBaseItem>(UBaseItem::StaticClass()->GetDefaultObject(true));
 			if (Element.Quantity < DefaultItem->StackSize)
 			{
+				UE_LOG(LogInventoryComponent, Log, TEXT("Found an item of the same class at location %d"), Element.IndexLocation);
 				return Element.IndexLocation;
 			}
 		}
 	}
 
 	// Case 2: If there's an inventory slot that is currently empty
-	for (F_InventoryItem Element : Items)
+	for (const F_InventoryItem& Element : GetItemsForItemType(Item->ItemType))
 	{
 		if (Element.ItemClass == UBaseItem::StaticClass())
 		{
+			UE_LOG(LogInventoryComponent, Log, TEXT("Found an empty slot at location %d"), Element.IndexLocation);
 			return Element.IndexLocation;
 		}
 	}
+
+	UE_LOG(LogInventoryComponent, Warning, TEXT("No suitable slot found."));
 	return -1;
 }
 
@@ -125,12 +152,40 @@ void UInventoryComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	Items.SetNum(Capacity);
-	for (int i = 0; i <= Capacity - 1; ++i)
+	Equipment.SetNum(EquipmentCapacity);
+	for (int i = 0; i <= EquipmentCapacity - 1; ++i)
 	{
-		Items[i].Quantity = 0;
-		Items[i].OwningInventory = this;
-		Items[i].IndexLocation = i;
+		Equipment[i].Quantity = 0;
+		Equipment[i].OwningInventory = this;
+		Equipment[i].IndexLocation = i;
+		Equipment[i].ItemType = EItemType::EIT_None;
+	}
+
+	QuestItems.SetNum(QuestItemsCapacity);
+	for (int i = 0; i <= QuestItemsCapacity - 1; ++i)
+	{
+		QuestItems[i].Quantity = 0;
+		QuestItems[i].OwningInventory = this;
+		QuestItems[i].IndexLocation = i;
+		QuestItems[i].ItemType = EItemType::EIT_None;
+	}
+
+	Consumables.SetNum(ConsumablesCapacity);
+	for (int i = 0; i <= ConsumablesCapacity - 1; ++i)
+	{
+		Consumables[i].Quantity = 0;
+		Consumables[i].OwningInventory = this;
+		Consumables[i].IndexLocation = i;
+		Consumables[i].ItemType = EItemType::EIT_None;
+	}
+
+	MiscellaneousItems.SetNum(MiscellaneousItemsCapacity);
+	for (int i = 0; i <= MiscellaneousItemsCapacity - 1; ++i)
+	{
+		MiscellaneousItems[i].Quantity = 0;
+		MiscellaneousItems[i].OwningInventory = this;
+		MiscellaneousItems[i].IndexLocation = i;
+		MiscellaneousItems[i].ItemType = EItemType::EIT_None;
 	}
 }
 
@@ -142,4 +197,3 @@ void UInventoryComponent::TickComponent(float DeltaTime, ELevelTick TickType, FA
 
 	// ...
 }
-

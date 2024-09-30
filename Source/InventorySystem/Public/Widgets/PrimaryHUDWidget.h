@@ -9,6 +9,7 @@
 #include "PrimaryHUDWidget.generated.h"
 
 
+
 class UInventoryComponent;
 class UInventorySlot;
 /**
@@ -35,7 +36,7 @@ public:
 public:
 	void ShowPlayerInventory(bool bShowInventory);
 
-	void UpdateInventory(const UInventoryComponent* InventoryComponent);
+	void UpdateInventory(UInventoryComponent* InventoryComponent);
 
 	void ClosePlayerInventory();
 

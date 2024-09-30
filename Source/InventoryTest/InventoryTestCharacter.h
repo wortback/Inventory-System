@@ -87,7 +87,9 @@ protected:
 protected:
 	virtual void OpenPlayerInventory() override;
 
-	virtual void UpdateInventoryHUD(const UInventoryComponent* Inventoryomponent) override;
+	virtual void UpdateInventoryHUD(UInventoryComponent* Inventoryomponent) override;
+
+	virtual void UpdateInventoryHUD() override;
 
 	virtual void RemoveItem(F_InventoryItem* Item) override;
 

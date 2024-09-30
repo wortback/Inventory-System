@@ -23,13 +23,13 @@ void UPrimaryHUDWidget::ShowPlayerInventory(bool bShowInventory)
 	}
 }
 
-void UPrimaryHUDWidget::UpdateInventory(const UInventoryComponent* InventoryComponent)
+void UPrimaryHUDWidget::UpdateInventory(UInventoryComponent* InventoryComponent)
 {
 	if (InventoryComponent && InventorySlotClass)
 	{
 		InventoryMenu->InventoryBox->ClearChildren();
 	
-		for (const F_InventoryItem& Item : InventoryComponent->GetItems())
+		for (const F_InventoryItem& Item : InventoryComponent->GetItemsForItemType(InventoryMenu->GetItemTypeForCurrentTab()))
 		{
 			UInventorySlot* ChildSlot = CreateWidget<UInventorySlot>(GetWorld(), InventorySlotClass);
 			ChildSlot->Item = Item;
@@ -39,7 +39,7 @@ void UPrimaryHUDWidget::UpdateInventory(const UInventoryComponent* InventoryComp
 	}
 	else
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Canot update the inventory. InventoryComponent is NULL or InventorySlotClass is not set in PrimaryHUD."));
+		UE_LOG(LogInventoryHUD, Warning, TEXT("Cannot update the inventory. InventoryComponent is NULL or InventorySlotClass is not set in PrimaryHUD."));
 	}
 }
 

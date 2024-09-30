@@ -8,6 +8,8 @@
 #include "InventoryComponent.generated.h"
 
 
+DECLARE_LOG_CATEGORY_EXTERN(LogInventoryComponent, Log, All)
+
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class INVENTORYSYSTEM_API UInventoryComponent : public UActorComponent
@@ -15,13 +17,25 @@ class INVENTORYSYSTEM_API UInventoryComponent : public UActorComponent
 	GENERATED_BODY()
 
 private:
-	/** Capacity of the inventory */
-	UPROPERTY(BlueprintReadOnly, EditAnywhere, meta = (AllowPrivateAccess = "true"))
-	int32 Capacity = 10;
-	
-	/** Array of items that are stored in the inventory */
-	UPROPERTY(BlueprintReadOnly, EditAnywhere, meta = (AllowPrivateAccess = "true"))
-	TArray<F_InventoryItem> Items;
+	/** Array for items of types Armour, Weapon */
+	TArray<F_InventoryItem> Equipment;
+
+	/** Array for items of type QuestItem */
+	TArray<F_InventoryItem> QuestItems;
+
+	/** Array for items of type Consumable */
+	TArray<F_InventoryItem> Consumables;
+
+	/** Array for items of type MiscellaneousItem */
+	TArray<F_InventoryItem> MiscellaneousItems;
+
+	int32 EquipmentCapacity = 15;
+
+	int32 QuestItemsCapacity = 30;
+
+	int32 ConsumablesCapacity = 30;
+
+	int32 MiscellaneousItemsCapacity = 30;
 
 public:	
 	/** Default Constructor */
@@ -66,6 +80,11 @@ public:
 	int FindAvailableLocation(F_InventoryItem* Item);
 
 
+	/**
+	 * Depending on ItemType returns the TArray the item can be assigned to
+	 */
+	TArray<F_InventoryItem>& GetItemsForItemType(EItemType ItemType);
+
 protected:
 
 	virtual void BeginPlay() override;
@@ -75,7 +94,14 @@ protected:
 public:	
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
-	FORCEINLINE int GetCapacity() const { return Capacity; }
-	FORCEINLINE const TArray<F_InventoryItem>& GetItems() const { return Items; }
+	FORCEINLINE const TArray<F_InventoryItem>& GetEquipment() const { return Equipment; }
+	FORCEINLINE const TArray<F_InventoryItem>& GetQuestItems() const { return QuestItems; }
+	FORCEINLINE const TArray<F_InventoryItem>& GetConsumables() const { return Consumables; }
+	FORCEINLINE const TArray<F_InventoryItem>& GetMiscellaneousItems() const { return MiscellaneousItems; }
+
+	FORCEINLINE int32 GetEquipmentCapacity() const { return EquipmentCapacity; }
+	FORCEINLINE int32 GetQuestItemsCapacity() const { return QuestItemsCapacity; }
+	FORCEINLINE int32 GetConsumablesCapacity() const { return ConsumablesCapacity; }
+	FORCEINLINE int32 GetMiscellaneousItemsCapacity() const { return MiscellaneousItemsCapacity; }
 		
 };

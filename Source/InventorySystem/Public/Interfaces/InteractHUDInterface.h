@@ -24,7 +24,9 @@ class INVENTORYSYSTEM_API IInteractHUDInterface
 public:
 	virtual void OpenPlayerInventory() = 0;
 
-	virtual void UpdateInventoryHUD(const UInventoryComponent* Inventoryomponent) = 0;
+	virtual void UpdateInventoryHUD(UInventoryComponent* Inventoryomponent) = 0;
+
+	virtual void UpdateInventoryHUD() = 0;
 
 	virtual void RemoveItem(F_InventoryItem* Item) = 0;
 };
