@@ -27,6 +27,8 @@ void UPrimaryHUDWidget::UpdateInventory(UInventoryComponent* InventoryComponent)
 {
 	if (InventoryComponent && InventorySlotClass)
 	{
+		InventoryMenu->UpdateMenu();
+		UE_LOG(LogInventoryHUD, Log, TEXT("Current tab is %d"), InventoryMenu->GetItemTypeForCurrentTab());
 		InventoryMenu->InventoryBox->ClearChildren();
 	
 		for (const F_InventoryItem& Item : InventoryComponent->GetItemsForItemType(InventoryMenu->GetItemTypeForCurrentTab()))

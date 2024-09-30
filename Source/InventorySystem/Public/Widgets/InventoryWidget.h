@@ -13,7 +13,7 @@ DECLARE_LOG_CATEGORY_EXTERN(LogInventoryHUD, Log, All)
 
 class UWrapBox;
 class UTextBlock;
-
+class UTabButtonWidget;
 
 
 /**
@@ -29,7 +29,10 @@ public:
 	TObjectPtr<UWrapBox> InventoryBox;
 
 	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
-	TObjectPtr<UTextBlock> TabName;
+	UTextBlock* TabName;
+
+	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
+	TObjectPtr<UTabButtonWidget> TabSwitch;
 
 public:
 	/**
@@ -37,6 +40,10 @@ public:
 	 * Since Weapons and Armour sets are displayed on the same tab, EIT_Armour is returned for both of them.
 	 */
 	EItemType GetItemTypeForCurrentTab();
+
+	void UpdateMenu();
+
+	virtual void NativeConstruct() override;
 
 private:
 	/** Inventory Tab that is currently displayed */

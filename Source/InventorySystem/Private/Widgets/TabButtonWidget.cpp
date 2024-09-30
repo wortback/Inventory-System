@@ -15,64 +15,36 @@ void UTabButtonWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	EquipmentTabButton->OnClicked.AddDynamic(this, &UTabButtonWidget::OnEquipmentTabClicked);
-	QuestTabButton->OnClicked.AddDynamic(this, &UTabButtonWidget::OnQuestTabClicked);
-	ConsumableTabButton->OnClicked.AddDynamic(this, &UTabButtonWidget::OnConsumableTabClicked);
-	MiscTabButton->OnClicked.AddDynamic(this, &UTabButtonWidget::OnMiscTabClicked);
-
+	EquipmentTabButton->OnPressed.AddDynamic(this, &UTabButtonWidget::OnEquipmentTabPressed);
+	QuestTabButton->OnPressed.AddDynamic(this, &UTabButtonWidget::OnQuestTabPressed);
+	ConsumableTabButton->OnPressed.AddDynamic(this, &UTabButtonWidget::OnConsumableTabPressed);
+	MiscTabButton->OnPressed.AddDynamic(this, &UTabButtonWidget::OnMiscTabPressed);
 }
 
-void UTabButtonWidget::OnEquipmentTabClicked()
+void UTabButtonWidget::OnEquipmentTabPressed()
 {
-// 	if (OwningWidget)
-// 	{
-// 		OwningWidget->SetCurrentTab(EInventoryWidgetTab::EIWT_Equipment);
-// 		UpdateInventoryHUD();
-// 	}
-// 	else
-// 	{
-// 		UE_LOG(LogInventoryHUD, Warning, TEXT("OwningWidget for UTabButtonWidget is NULL."));
-// 	}
+	SetCurrentTab(EInventoryWidgetTab::EIWT_Equipment);
+	UpdateInventoryHUD();
 }
 
-void UTabButtonWidget::OnQuestTabClicked()
+void UTabButtonWidget::OnQuestTabPressed()
 {
-
-// 	if (OwningWidget)
-// 	{
-// 		OwningWidget->SetCurrentTab(EInventoryWidgetTab::EIWT_Quest);
-// 		UpdateInventoryHUD();
-// 	}
-// 	else
-// 	{
-// 		UE_LOG(LogInventoryHUD, Warning, TEXT("OwningWidget for UTabButtonWidget is NULL."));
-// 	}
+	SetCurrentTab(EInventoryWidgetTab::EIWT_Quest);
+	UpdateInventoryHUD();
 }
 
-void UTabButtonWidget::OnConsumableTabClicked()
+void UTabButtonWidget::OnConsumableTabPressed()
 {
-// 	if (OwningWidget)
-// 	{
-// 		OwningWidget->SetCurrentTab(EInventoryWidgetTab::EIWT_Consumable);
-// 		UpdateInventoryHUD();
-// 	}
-// 	else
-// 	{
-// 		UE_LOG(LogInventoryHUD, Warning, TEXT("OwningWidget for UTabButtonWidget is NULL."));
-// 	}
+
+	SetCurrentTab(EInventoryWidgetTab::EIWT_Consumable);
+	UpdateInventoryHUD();
 }
 
-void UTabButtonWidget::OnMiscTabClicked()
+void UTabButtonWidget::OnMiscTabPressed()
 {
-// 	if (OwningWidget)
-// 	{
-// 		OwningWidget->SetCurrentTab(EInventoryWidgetTab::EIWT_Miscellaneous);
-// 		UpdateInventoryHUD();
-// 	}
-// 	else
-// 	{
-// 		UE_LOG(LogInventoryHUD, Warning, TEXT("OwningWidget for UTabButtonWidget is NULL."));
-// 	}
+ 	SetCurrentTab(EInventoryWidgetTab::EIWT_Miscellaneous);
+	UpdateInventoryHUD();
+
 }
 
 void UTabButtonWidget::UpdateInventoryHUD()
@@ -83,11 +55,12 @@ void UTabButtonWidget::UpdateInventoryHUD()
 		IInteractHUDInterface* Interface = Cast<IInteractHUDInterface>(PlayerCharacter);
 		if (Interface)
 		{
+			UE_LOG(LogInventoryHUD, Log, TEXT("Interface Cast to IInteractHUDInterface successful"));
 			Interface->UpdateInventoryHUD();
 		}
 		else
 		{
-			UE_LOG(LogInventoryHUD, Warning, TEXT("Interface Cast unsuccessful"));
+			UE_LOG(LogInventoryHUD, Warning, TEXT("Interface Cast to IInteractHUDInterface unsuccessful"));
 		}
 	}
 }

@@ -43,13 +43,17 @@ public:
 
 	virtual void NativeConstruct() override;
 
-	void OnEquipmentTabClicked();
+	UFUNCTION()
+	void OnEquipmentTabPressed();
 
-	void OnQuestTabClicked();
+	UFUNCTION()
+	void OnQuestTabPressed();
 
-	void OnConsumableTabClicked();
+	UFUNCTION()
+	void OnConsumableTabPressed();
 
-	void OnMiscTabClicked();
+	UFUNCTION()
+	void OnMiscTabPressed();
 
 	void UpdateInventoryHUD();
 

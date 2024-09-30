@@ -162,7 +162,7 @@ void AInventoryTestCharacter::Look(const FInputActionValue& Value)
 
 void AInventoryTestCharacter::Interact(const FInputActionValue& Value)
 {
-	UE_LOG(LogTemp, Log, TEXT("Interact action is called."));
+	UE_LOG(LogTemplateCharacter, Log, TEXT("Interact action is called."));
 
 	// Trace a BaseItem
 	FHitResult ItemTraceResult;
@@ -181,14 +181,14 @@ void AInventoryTestCharacter::Interact(const FInputActionValue& Value)
 
 	if (ItemTraceResult.bBlockingHit)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Hit"));
+		UE_LOG(LogTemplateCharacter, Warning, TEXT("Hit"));
 		DrawDebugSphere(GetWorld(), ItemTraceResult.Location, 15.f, 12, FColor::Red, false, 5.f);
 
 		AWorldItem* HitItem = Cast<AWorldItem>(ItemTraceResult.GetActor());
-		UE_LOG(LogTemp, Warning, TEXT("Hit WorldItem %s"), *GetNameSafe(ItemTraceResult.GetComponent()));
+		UE_LOG(LogTemplateCharacter, Warning, TEXT("Hit WorldItem %s"), *GetNameSafe(ItemTraceResult.GetComponent()));
 		if (HitItem)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("Hit WorldItem"));
+			UE_LOG(LogTemplateCharacter, Warning, TEXT("Hit WorldItem"));
 			bool success = HitItem->Interact(PlayerInventoryComponent);
 		}
 	}
@@ -196,7 +196,7 @@ void AInventoryTestCharacter::Interact(const FInputActionValue& Value)
 
 void AInventoryTestCharacter::OpenInventory(const FInputActionValue& Value)
 {
-	UE_LOG(LogTemp, Warning, TEXT("Inventory opened"));
+	UE_LOG(LogTemplateCharacter, Log, TEXT("Inventory opened"));
 	APlayerController* PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
 	if (PlayerController)
 	{
@@ -224,7 +224,7 @@ void AInventoryTestCharacter::OpenInventory(const FInputActionValue& Value)
 #pragma region InteractHUDInterfaceImplementation
 void AInventoryTestCharacter::OpenPlayerInventory()
 {
-	UE_LOG(LogTemp, Warning, TEXT("OpenPlayerInventory is called."));
+	UE_LOG(LogTemplateCharacter, Log, TEXT("OpenPlayerInventory is called."));
 
 
 	UpdateInventoryHUD(PlayerInventoryComponent);
@@ -237,20 +237,16 @@ void AInventoryTestCharacter::OpenPlayerInventory()
 
 void AInventoryTestCharacter::UpdateInventoryHUD(UInventoryComponent* InventoryComponent)
 {
-	UE_LOG(LogTemplateCharacter, Warning, TEXT("UpdateInventoryHUD is called."));
+	UE_LOG(LogTemplateCharacter, Log, TEXT("UpdateInventoryHUD is called."));
 	if (PrimaryHUDWidget)
 	{
-		if (InventoryComponent)
-		{
-			UE_LOG(LogTemp, Warning, TEXT("InventoryComponent is not NONE"));
-		}
 		PrimaryHUDWidget->UpdateInventory(InventoryComponent);
 	}
 }
 
 void AInventoryTestCharacter::UpdateInventoryHUD()
 {
-	UE_LOG(LogTemp, Warning, TEXT("UpdateInventoryHUD is called."));
+	UE_LOG(LogTemplateCharacter, Log, TEXT("UpdateInventoryHUD is called."));
 	if (PrimaryHUDWidget)
 	{
 		PrimaryHUDWidget->UpdateInventory(PlayerInventoryComponent);
@@ -259,7 +255,7 @@ void AInventoryTestCharacter::UpdateInventoryHUD()
 
 void AInventoryTestCharacter::RemoveItem(F_InventoryItem* Item)
 {
-	UE_LOG(LogTemp, Warning, TEXT("AMainCharacter::RemoveItem is called"));
+	UE_LOG(LogTemplateCharacter, Log, TEXT("AMainCharacter::RemoveItem is called"));
 	PlayerInventoryComponent->RemoveItem(Item);
 }
 

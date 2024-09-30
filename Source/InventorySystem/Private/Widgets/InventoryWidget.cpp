@@ -2,6 +2,8 @@
 
 
 #include "Widgets/InventoryWidget.h"
+#include "Components/TextBlock.h"
+#include "Widgets/TabButtonWidget.h"
 
 
 DEFINE_LOG_CATEGORY(LogInventoryHUD);
@@ -28,4 +30,35 @@ EItemType UInventoryWidget::GetItemTypeForCurrentTab()
 		return EItemType::EIT_None;
 		break;
 	}
+}
+
+void UInventoryWidget::UpdateMenu()
+{
+	CurrentTab = TabSwitch->GetCurrentTab();
+
+	switch (CurrentTab)
+	{
+	case EInventoryWidgetTab::EIWT_Equipment:
+		TabName->SetText(FText::FromString("EQUIPMENT"));
+		break;
+	case EInventoryWidgetTab::EIWT_Quest:
+		TabName->SetText(FText::FromString("QUEST ITEMS"));
+		break;
+	case EInventoryWidgetTab::EIWT_Consumable:
+		TabName->SetText(FText::FromString("CONSUMABLES"));
+		break;
+	case EInventoryWidgetTab::EIWT_Miscellaneous:
+		TabName->SetText(FText::FromString("MISC"));
+		break;
+	default:
+		UE_LOG(LogInventoryHUD, Error, TEXT("Cannot update menu! Invalid current tab!"));
+		break;
+	}
+}
+
+void UInventoryWidget::NativeConstruct()
+{
+	Super::NativeConstruct();
+	TabName->SetText(FText::FromString("EQUIPMENT"));
+	UpdateMenu();
 }
