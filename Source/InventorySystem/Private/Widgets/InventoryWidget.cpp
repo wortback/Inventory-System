@@ -5,13 +5,14 @@
 #include "Components/TextBlock.h"
 #include "Widgets/TabButtonWidget.h"
 
+//Logging
+#include "InventorySystem.h"
 
-DEFINE_LOG_CATEGORY(LogInventoryHUD);
 
 
 EItemType UInventoryWidget::GetItemTypeForCurrentTab()
 {
-	switch (CurrentTab)
+	switch (GetCurrentTab())
 	{
 	case EInventoryWidgetTab::EIWT_Equipment:
 		return EItemType::EIT_Armour;
@@ -34,9 +35,7 @@ EItemType UInventoryWidget::GetItemTypeForCurrentTab()
 
 void UInventoryWidget::UpdateMenu()
 {
-	CurrentTab = TabSwitch->GetCurrentTab();
-
-	switch (CurrentTab)
+	switch (GetCurrentTab())
 	{
 	case EInventoryWidgetTab::EIWT_Equipment:
 		TabName->SetText(FText::FromString("EQUIPMENT"));
@@ -61,4 +60,14 @@ void UInventoryWidget::NativeConstruct()
 	Super::NativeConstruct();
 	TabName->SetText(FText::FromString("EQUIPMENT"));
 	UpdateMenu();
+}
+
+EInventoryWidgetTab UInventoryWidget::GetCurrentTab() const
+{
+	return TabSwitch->GetCurrentTab();
+}
+
+void UInventoryWidget::SetCurrentTab(EInventoryWidgetTab Tab)
+{
+	{ TabSwitch->SetCurrentTab(Tab); }
 }

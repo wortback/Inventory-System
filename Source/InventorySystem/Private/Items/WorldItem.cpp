@@ -4,6 +4,12 @@
 #include "Items/WorldItem.h"
 #include "Components/BillboardComponent.h"
 #include "Inventory/InventoryComponent.h"
+#include "Items/BaseItem.h"
+
+// Logging
+#include "InventorySystem.h"
+
+
 
 // Sets default values
 AWorldItem::AWorldItem()
@@ -76,18 +82,31 @@ void AWorldItem::Tick(float DeltaTime)
 bool AWorldItem::Interact(UInventoryComponent* Inventory)
 {
 	F_InventoryItem* Item = new F_InventoryItem();
-	Item->ItemClass = ItemClass;
-	Item->Quantity = Quantity;
-	if (Inventory->ProcessItem(Item))
+	if (ItemClass)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Handle successful item processing."));
-		Destroy();
-		return true;
+		UBaseItem* BaseItem = Cast<UBaseItem>(ItemClass->GetDefaultObject());
+
+		if (BaseItem)
+		{
+			Item->ItemClass = ItemClass;
+			Item->Quantity = Quantity;
+
+			UE_LOG(LogItems, Log, TEXT("Interacting with the item of type %s"), *(EItemTypeToString(BaseItem->ItemType)));
+			Item->ItemType = BaseItem->ItemType;
+		}
+
+		if (Inventory->ProcessItem(Item))
+		{
+			UE_LOG(LogItems, Log, TEXT("Handle successful item processing."));
+			Destroy();
+			return true;
+		}
+		else
+		{
+			return false;
+		}
 	}
-	else
-	{
-		return false;
-	}
-	
+	UE_LOG(LogItems, Warning, TEXT("ItemClass is not set for this WorldObject! Failed to interact."));
+	return false;
 }
 

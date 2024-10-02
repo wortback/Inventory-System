@@ -8,6 +8,8 @@
 #include "Widgets/InventoryWidget.h"
 #include "GameFramework/Character.h"
 
+// Logging
+#include "InventorySystem.h"
 
 
 

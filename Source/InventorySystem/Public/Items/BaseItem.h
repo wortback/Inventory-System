@@ -4,6 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
+#include "System/CommonTypes.h"
+
 #include "BaseItem.generated.h"
 
 
@@ -38,7 +40,7 @@ public:
 
 	/** True, if the item is stackable (multiple copies stored in oe inventory slot) */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Defaults")
-	bool isStackable = true;
+	bool bIsStackable = true;
 
 	/** Max amount of the item a player can possess */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Defaults")
@@ -50,5 +52,8 @@ public:
 
 	/** For how long the item persists in the world before despawning */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Defaults")
-	float DespawnTime;	
+	float DespawnTime;
+
+	/** What item group should this item be assigned to within the inventory component */
+	EItemType ItemType;
 };

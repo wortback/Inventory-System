@@ -36,7 +36,7 @@ public:
 public:
 	void ShowPlayerInventory(bool bShowInventory);
 
-	void UpdateInventory(UInventoryComponent* InventoryComponent);
+	void UpdateInventory(const UInventoryComponent* InventoryComponent);
 
 	void ClosePlayerInventory();
 

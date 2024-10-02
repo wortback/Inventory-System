@@ -38,12 +38,11 @@ public:
 	F_InventoryItem Item;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(ExposeOnSpawn = "true"))
-	TSubclassOf<UPrimaryHUDWidget> OwningHUDClass;
-
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(ExposeOnSpawn = "true"))
 	UPrimaryHUDWidget* OwningHUD;
 
 public:
+	virtual void NativeConstruct() override;
+
 	virtual void NativeOnMouseEnter(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) override;
 
 	virtual void NativeOnMouseLeave(const FPointerEvent& InMouseEvent) override;

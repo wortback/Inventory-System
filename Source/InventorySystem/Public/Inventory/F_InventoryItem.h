@@ -11,18 +11,6 @@
 class UInventoryComponent;
 
 
-/*
-UENUM()
-enum class EItemType : uint8
-{
-	EIT_Armour,
-    EIT_Weapon,
-	EIT_Quest,
-	EIT_Consumable,
-    EIT_Miscellaneous,
-    EIT_None
-};
-*/
 
 /**
  * @struct F_InventoryItem
@@ -50,7 +38,8 @@ public:
     /** Type of item */
     EItemType ItemType;
 
-    FString ItemTypeToString();
+    /** Is multiple copies of the came object should be stacked */
+    bool bShouldStack;
 
     // Default constructor and Destructor
     F_InventoryItem();

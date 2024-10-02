@@ -8,7 +8,7 @@
 #include "InventoryComponent.generated.h"
 
 
-DECLARE_LOG_CATEGORY_EXTERN(LogInventoryComponent, Log, All)
+
 
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
@@ -83,7 +83,12 @@ public:
 	/**
 	 * Depending on ItemType returns the TArray the item can be assigned to
 	 */
-	TArray<F_InventoryItem>& GetItemsForItemType(EItemType ItemType);
+	const TArray<F_InventoryItem>& GetItemsForItemType(EItemType ItemType) const;
+
+	/**
+	 * Depending on ItemType returns the TArray the item can be assigned to
+	 */
+	TArray<F_InventoryItem>& SetItemsForItemType(EItemType ItemType);
 
 protected:
 

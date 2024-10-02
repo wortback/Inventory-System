@@ -8,7 +8,7 @@
 #include "InventoryWidget.generated.h"
 
 
-DECLARE_LOG_CATEGORY_EXTERN(LogInventoryHUD, Log, All)
+
 
 
 class UWrapBox;
@@ -17,6 +17,7 @@ class UTabButtonWidget;
 
 
 /**
+ * Widget that displays the content of InventoryComponent, namely contains the corresponding slots of 4 items arrays.
  * 
  */
 UCLASS()
@@ -29,7 +30,7 @@ public:
 	TObjectPtr<UWrapBox> InventoryBox;
 
 	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
-	UTextBlock* TabName;
+	TObjectPtr<UTextBlock> TabName;
 
 	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
 	TObjectPtr<UTabButtonWidget> TabSwitch;
@@ -45,11 +46,7 @@ public:
 
 	virtual void NativeConstruct() override;
 
-private:
-	/** Inventory Tab that is currently displayed */
-	EInventoryWidgetTab CurrentTab = EInventoryWidgetTab::EIWT_Equipment;
-
 public:
-	FORCEINLINE EInventoryWidgetTab GetCurrentTab() const { return CurrentTab; }
-	FORCEINLINE void SetCurrentTab(EInventoryWidgetTab Tab) { CurrentTab = Tab; }
+	EInventoryWidgetTab GetCurrentTab() const;
+	void SetCurrentTab(EInventoryWidgetTab Tab);
 };

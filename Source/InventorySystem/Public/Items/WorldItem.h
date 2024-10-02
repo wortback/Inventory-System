@@ -30,10 +30,10 @@ public:
 
 
 protected:
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item Defaults", meta = (AllowPrivateAccess = "true", ExposeOnSpawn = "true"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item Defaults", meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<UBaseItem> ItemClass;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item Defaults", meta = (AllowPrivateAccess = "true", ExposeOnSpawn = "true"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item Defaults", meta = (AllowPrivateAccess = "true"))
 	int32 Quantity = 1;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item Defaults", meta = (AllowPrivateAccess = "true"))

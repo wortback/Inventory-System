@@ -9,6 +9,9 @@
 #include "Components/WrapBox.h"
 #include "Inventory/InventoryComponent.h"
 
+// Logging
+#include "InventorySystem.h"
+
 
 
 void UPrimaryHUDWidget::ShowPlayerInventory(bool bShowInventory)
@@ -23,7 +26,7 @@ void UPrimaryHUDWidget::ShowPlayerInventory(bool bShowInventory)
 	}
 }
 
-void UPrimaryHUDWidget::UpdateInventory(UInventoryComponent* InventoryComponent)
+void UPrimaryHUDWidget::UpdateInventory(const UInventoryComponent* InventoryComponent)
 {
 	if (InventoryComponent && InventorySlotClass)
 	{

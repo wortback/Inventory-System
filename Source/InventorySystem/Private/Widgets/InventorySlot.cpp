@@ -4,11 +4,47 @@
 #include "Widgets/InventorySlot.h"
 #include "Widgets/PrimaryHUDWidget.h"
 #include "Widgets/InventorySlotDragDropOperation.h"
+#include "Items/BaseItem.h"
+#include "Components/Image.h"
+#include "Components/TextBlock.h"
+
+// Logging
+#include "InventorySystem.h"
+
+
+void UInventorySlot::NativeConstruct()
+{
+	if (Item.Quantity > 0)
+	{
+		UBaseItem* BaseItem = Cast<UBaseItem>(Item.ItemClass->GetDefaultObject(true));
+		
+		if (BaseItem)
+		{	
+
+			if (BaseItem->Thumbnail) 
+				Thumbnail->SetBrushFromTexture(BaseItem->Thumbnail);
+
+			ItemName->SetText(BaseItem->ItemName);
+			if (Item.bShouldStack)
+			{
+				AmountText->SetText(FText::FromString(FString::FromInt(Item.Quantity)));
+			}
+		}
+	}
+	else
+	{
+		Thumbnail->SetColorAndOpacity(FLinearColor::Transparent);
+		ItemName->SetText(FText::GetEmpty());
+		AmountText->SetText(FText::GetEmpty());
+	}
+}
 
 void UInventorySlot::NativeOnMouseEnter(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
 {
-	if (OwningHUDClass && OwningHUD)
+	if (OwningHUD)
 	{
+		UE_LOG(LogInventoryHUD, Log, TEXT("ItemType %s"), *(EItemTypeToString(Item.ItemType)));
+		UE_LOG(LogInventoryHUD, Log, TEXT("ItemQuantity %d"), Item.Quantity);
 		IInventoryWidgetsInterface* Interface = Cast<IInventoryWidgetsInterface>(OwningHUD);
 		if (Interface)
 		{
@@ -19,7 +55,7 @@ void UInventorySlot::NativeOnMouseEnter(const FGeometry& InGeometry, const FPoin
 
 void UInventorySlot::NativeOnMouseLeave(const FPointerEvent& InMouseEvent)
 {
-	if (OwningHUDClass && OwningHUD)
+	if (OwningHUD)
 	{
 		IInventoryWidgetsInterface* Interface = Cast<IInventoryWidgetsInterface>(OwningHUD);
 		if (Interface)

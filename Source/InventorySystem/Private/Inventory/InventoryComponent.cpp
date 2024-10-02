@@ -5,9 +5,13 @@
 #include "Interfaces/InteractHUDInterface.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/Character.h"
+#include "System/CommonTypes.h"
+
+// Logging
+#include "InventorySystem.h"
 
 
-DEFINE_LOG_CATEGORY(LogInventoryComponent);
+
 
 
 UInventoryComponent::UInventoryComponent()
@@ -34,7 +38,8 @@ void UInventoryComponent::UpdateInventoryHUD()
 bool UInventoryComponent::ProcessItem(F_InventoryItem* Item)
 {
 	int32 ItemIndexLocation = FindAvailableLocation(Item);
-	UE_LOG(LogInventoryComponent, Warning, TEXT("Found available location at Index %d"), ItemIndexLocation);
+	UE_LOG(LogInventoryComponent, Log, TEXT("ItemType: %s"), *(EItemTypeToString(Item->ItemType)));
+
 	if (ItemIndexLocation >= 0)
 	{
 		F_InventoryItem* AddedItem = AddItem(Item, ItemIndexLocation);
@@ -60,9 +65,11 @@ bool UInventoryComponent::ProcessItem(F_InventoryItem* Item)
 
 F_InventoryItem* UInventoryComponent::AddItem(F_InventoryItem* Item, int IndexLocation)
 {
-	UE_LOG(LogInventoryComponent, Log, TEXT("Adding a new item of type %s"), *(Item->ItemTypeToString()));
+	UE_LOG(LogInventoryComponent, Log, TEXT("Adding a new item of type %s"), *(EItemTypeToString(Item->ItemType)));
 
-	F_InventoryItem* ItemAtLocation = &GetItemsForItemType(Item->ItemType)[IndexLocation];
+	F_InventoryItem* ItemAtLocation = &SetItemsForItemType(Item->ItemType)[IndexLocation];
+
+
 	UBaseItem* DefaultItem = Cast<UBaseItem>(UBaseItem::StaticClass()->GetDefaultObject(true));
 	
 	int32 NewQuantity = ItemAtLocation->Quantity + Item->Quantity;
@@ -86,7 +93,7 @@ F_InventoryItem* UInventoryComponent::AddItem(F_InventoryItem* Item, int IndexLo
 
 bool UInventoryComponent::RemoveItem(F_InventoryItem* Item)
 {
-	F_InventoryItem* ItemAtLocation = &GetItemsForItemType(Item->ItemType)[Item->IndexLocation];
+	F_InventoryItem* ItemAtLocation = &SetItemsForItemType(Item->ItemType)[Item->IndexLocation];
 	ItemAtLocation->ItemClass = UBaseItem::StaticClass();
 	ItemAtLocation->OwningInventory = nullptr;
 	ItemAtLocation->Quantity = 0;
@@ -95,7 +102,7 @@ bool UInventoryComponent::RemoveItem(F_InventoryItem* Item)
 	return true;
 }
 
-TArray<F_InventoryItem>& UInventoryComponent::GetItemsForItemType(EItemType ItemType)
+const TArray<F_InventoryItem>& UInventoryComponent::GetItemsForItemType(EItemType ItemType) const
 {
 	switch (ItemType)
 	{
@@ -145,6 +152,26 @@ int UInventoryComponent::FindAvailableLocation(F_InventoryItem* Item)
 
 	UE_LOG(LogInventoryComponent, Warning, TEXT("No suitable slot found."));
 	return -1;
+}
+
+TArray<F_InventoryItem>& UInventoryComponent::SetItemsForItemType(EItemType ItemType)
+{
+	switch (ItemType)
+	{
+	case EItemType::EIT_Armour:
+	case EItemType::EIT_Weapon:
+		return Equipment;
+	case EItemType::EIT_Quest:
+		return QuestItems;
+	case EItemType::EIT_Consumable:
+		return Consumables;
+	case EItemType::EIT_Miscellaneous:
+		return MiscellaneousItems;
+	case EItemType::EIT_None:
+	default:
+		UE_LOG(LogInventoryComponent, Warning, TEXT("Cannot get the inventory section for an item since the item is of type EIT_None."));
+		return Equipment;
+	}
 }
 
 // Called when the game starts
