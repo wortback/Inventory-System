@@ -14,6 +14,4 @@ class INVENTORYSYSTEM_API UBaseMiscItem : public UBaseItem
 {
 	GENERATED_BODY()
 	
-public:
-	UBaseMiscItem();
 };

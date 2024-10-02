@@ -4,10 +4,28 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "System/CommonTypes.h"
+#include "Inventory/F_InventoryItem.h"
+#include "Interfaces/StorageInterface.h"
+#include "Interfaces/InteractableInterface.h"
+
 #include "BaseStorage.generated.h"
 
+
+class UStaticMeshComponent;
+class UInventoryComponent;
+class UStorageContentWidget;
+
+UENUM(Blueprintable)
+enum class EStorageRank : uint8
+{
+	ESR_Common,
+	ESR_Exquisite,
+	ESR_Luxurious,
+};
+
 UCLASS()
-class INVENTORYSYSTEM_API ABaseStorage : public AActor
+class INVENTORYSYSTEM_API ABaseStorage : public AActor, public IStorageInterface, public IInteractableInterface
 {
 	GENERATED_BODY()
 	
@@ -15,12 +33,59 @@ public:
 	// Sets default values for this actor's properties
 	ABaseStorage();
 
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Collision")
+	UStaticMeshComponent* DisplayMesh;
+
+	UPROPERTY(EditAnywhere, Category = "HUD")
+	TSubclassOf<UStorageContentWidget> ContentWidgetClass;
+
+	UPROPERTY(EditAnywhere, Category = "HUD")
+	UStorageContentWidget* ContentWidget = nullptr;
+
+protected:
+	/** Items stored */
+	UPROPERTY(EditAnywhere, Category = "Storage Defaults", meta = (AllowPrivateAccess = "true"))
+	TArray<F_InventoryItem> Items;
+
+	/** Storage capacity */
+	UPROPERTY(EditAnywhere, Category = "Storage Defaults", meta = (AllowPrivateAccess = "true"))
+	int32 Capacity = 10;
+
+	/** The maximum number of items that can be generated */
+	int32 GenerationRange = 10;
+
+	/** Determines how rare/valuable the items stored will be */
+	UPROPERTY(EditAnywhere, Category = "Storage Defaults", meta = (AllowPrivateAccess = "true"))
+	EStorageRank StorageRank = EStorageRank::ESR_Common;
+
+	/** True if stored items should not randomly respawn after a period of time */
+	UPROPERTY(EditAnywhere, Category = "Storage Defaults", meta = (AllowPrivateAccess = "true"))
+	bool bIsPersistent = false;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+#pragma region StorageInterface
+public:
+	/** Initialises items stored in the storage */
+	virtual void IntialiseStorage() override;
+
+	/** Generates random items in the provided array */
+	virtual void GenerateRandomItems() override;
+
+	/** Displays stored items on the screen */
+	virtual void DisplayContent() override;
+
+	virtual bool Interact(UInventoryComponent* Inventory) override;
+
+#pragma endregion StorageInterface
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+
+public:
+	FORCEINLINE const TArray<F_InventoryItem>& GetStoredItems() const { return Items; };
 
 };

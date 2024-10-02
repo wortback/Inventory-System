@@ -17,16 +17,18 @@ class UInventoryComponent;
  * Item struct used for storing inventory related item information.
  * 
  */
-USTRUCT()
+USTRUCT(Blueprintable)
 struct F_InventoryItem
 {
     GENERATED_BODY()
 
 public:
     /** Pointer to item's class */
+    UPROPERTY(EditAnywhere)
     TSubclassOf<UBaseItem> ItemClass;
 
     /** Quantity of item */
+    UPROPERTY(EditAnywhere)
     int32 Quantity;
 
     /** Inventory which the item belongs to */
@@ -36,10 +38,8 @@ public:
     int32 IndexLocation;
 
     /** Type of item */
+    UPROPERTY(EditAnywhere)
     EItemType ItemType;
-
-    /** Is multiple copies of the came object should be stacked */
-    bool bShouldStack;
 
     // Default constructor and Destructor
     F_InventoryItem();

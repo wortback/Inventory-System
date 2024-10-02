@@ -52,8 +52,23 @@ public:
 
 	/** For how long the item persists in the world before despawning */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Defaults")
-	float DespawnTime;
+	float DespawnTime = 0.0f;
 
 	/** What item group should this item be assigned to within the inventory component */
-	EItemType ItemType;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Defaults")
+	EItemType ItemType = EItemType::EIT_None;
+
+	/** Price of the item */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Defaults")
+	int32 Price = 0;
+
+	/** Weight of the item */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Defaults")
+	int32 Weight = 0;
+
+	/** For how long the item persists in the world before despawning */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Defaults")
+	EItemRarity ItemRarity = EItemRarity::EIR_Common;
+
+
 };

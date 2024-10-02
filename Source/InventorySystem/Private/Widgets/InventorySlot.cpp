@@ -25,7 +25,7 @@ void UInventorySlot::NativeConstruct()
 				Thumbnail->SetBrushFromTexture(BaseItem->Thumbnail);
 
 			ItemName->SetText(BaseItem->ItemName);
-			if (Item.bShouldStack)
+			if (BaseItem->bIsStackable)
 			{
 				AmountText->SetText(FText::FromString(FString::FromInt(Item.Quantity)));
 			}

@@ -15,6 +15,7 @@
 #include "InventorySystem/Public/Widgets/PrimaryHUDWidget.h"
 #include "InventorySystem/Public/Inventory/InventoryComponent.h"
 #include "DrawDebugHelpers.h"
+#include "Inventory/BaseStorage.h"
 
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
@@ -181,6 +182,7 @@ void AInventoryTestCharacter::Interact(const FInputActionValue& Value)
 
 	if (ItemTraceResult.bBlockingHit)
 	{
+		
 		UE_LOG(LogTemplateCharacter, Warning, TEXT("Hit"));
 		DrawDebugSphere(GetWorld(), ItemTraceResult.Location, 15.f, 12, FColor::Red, false, 5.f);
 
@@ -190,6 +192,13 @@ void AInventoryTestCharacter::Interact(const FInputActionValue& Value)
 		{
 			UE_LOG(LogTemplateCharacter, Warning, TEXT("Hit WorldItem"));
 			bool success = HitItem->Interact(PlayerInventoryComponent);
+		} 
+
+		ABaseStorage* HitStorage = Cast<ABaseStorage>(ItemTraceResult.GetActor());
+		if (HitStorage)
+		{
+			UE_LOG(LogTemplateCharacter, Warning, TEXT("Hit BaseStorage"));
+			bool success = HitStorage->Interact(PlayerInventoryComponent);
 		}
 	}
 }
