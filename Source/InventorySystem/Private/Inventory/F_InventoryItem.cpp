@@ -29,3 +29,10 @@ F_InventoryItem::F_InventoryItem(const F_InventoryItem& Item)
     OwningInventory = Item.OwningInventory;
     ItemType = Item.ItemType;
 }
+
+void F_InventoryItem::ClearItem()
+{
+    ItemClass = UBaseItem::StaticClass();
+    Quantity = 0;
+    ItemType = EItemType::EIT_None;
+}

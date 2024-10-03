@@ -93,7 +93,7 @@ protected:
 
 	virtual void RemoveItem(F_InventoryItem* Item) override;
 
-
+	virtual bool ProcessItem(F_InventoryItem* Item) override;
 
 #pragma endregion InteractHUDInterface
 			

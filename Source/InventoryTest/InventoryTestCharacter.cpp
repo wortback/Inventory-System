@@ -268,4 +268,9 @@ void AInventoryTestCharacter::RemoveItem(F_InventoryItem* Item)
 	PlayerInventoryComponent->RemoveItem(Item);
 }
 
+bool AInventoryTestCharacter::ProcessItem(F_InventoryItem* Item)
+{
+	return PlayerInventoryComponent->ProcessItem(Item);
+}
+
 #pragma endregion InteractHUDInterfaceImplementation

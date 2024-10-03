@@ -25,4 +25,6 @@ public:
 	virtual void GenerateRandomItems() = 0;
 
 	virtual void DisplayContent() = 0;
+
+	virtual void HideContent() = 0;
 };

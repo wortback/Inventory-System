@@ -25,9 +25,12 @@ public:
 	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
 	TObjectPtr<UTextBlock> SlotText;
 
-	F_InventoryItem SlotItem;
+	F_InventoryItem* SlotItem;
 
 public:
 	virtual void NativeConstruct() override;
+
+	UFUNCTION()
+	void OnButtonClicked();
 
 };

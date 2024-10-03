@@ -11,7 +11,7 @@
 
 /**
  * @class UBaseItem
- * Abstract base class for all items in the game.
+ * Abstract base class that stores information an item.
  * 
  */
 UCLASS(NotBlueprintable, Abstract)
@@ -69,6 +69,4 @@ public:
 	/** For how long the item persists in the world before despawning */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Defaults")
 	EItemRarity ItemRarity = EItemRarity::EIR_Common;
-
-
 };

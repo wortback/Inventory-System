@@ -28,12 +28,14 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Storage")
 	TSubclassOf<ABaseStorage> OwningStorageClass;
 
-	UPROPERTY(EditAnywhere, Category = "HUD")
-	TSubclassOf<UStorageContentSlot> ContentSlotClass;
-
 	ABaseStorage* OwningStorage = nullptr;
+
 public:
 	virtual void NativeConstruct() override;
 
+	virtual void NativeOnFocusLost(const FFocusEvent& InFocusEvent) override;
 
+	virtual FReply NativeOnKeyDown(const FGeometry& InGeometry, const FKeyEvent& InKeyEvent) override;
+
+	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
 };

@@ -29,4 +29,6 @@ public:
 	virtual void UpdateInventoryHUD() = 0;
 
 	virtual void RemoveItem(F_InventoryItem* Item) = 0;
+
+	virtual bool ProcessItem(F_InventoryItem* Item) = 0;
 };

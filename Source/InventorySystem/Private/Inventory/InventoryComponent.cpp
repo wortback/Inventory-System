@@ -49,16 +49,15 @@ bool UInventoryComponent::ProcessItem(F_InventoryItem* Item)
 		}
 		else
 		{
+			delete AddedItem;
 			return true;
 		}
-		delete AddedItem;
 	}
 	else
 	{
 		UE_LOG(LogInventoryComponent, Warning, TEXT("Inventory is full"));
 		return false;
 	}
-
 
 	return false;
 }

@@ -99,13 +99,17 @@ bool AWorldItem::Interact(UInventoryComponent* Inventory)
 		{
 			UE_LOG(LogItems, Log, TEXT("Handle successful item processing."));
 			Destroy();
+
+			delete Item;
 			return true;
 		}
 		else
 		{
+			delete Item;
 			return false;
 		}
 	}
+	delete Item;
 	UE_LOG(LogItems, Warning, TEXT("ItemClass is not set for this WorldObject! Failed to interact."));
 	return false;
 }

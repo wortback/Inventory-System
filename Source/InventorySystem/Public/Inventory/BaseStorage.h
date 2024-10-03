@@ -15,6 +15,7 @@
 class UStaticMeshComponent;
 class UInventoryComponent;
 class UStorageContentWidget;
+class UStorageContentSlot;
 
 UENUM(Blueprintable)
 enum class EStorageRank : uint8
@@ -36,23 +37,38 @@ public:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Collision")
 	UStaticMeshComponent* DisplayMesh;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	USceneComponent* DefaultSceneComponent = nullptr;
+
 	UPROPERTY(EditAnywhere, Category = "HUD")
 	TSubclassOf<UStorageContentWidget> ContentWidgetClass;
+
+	UPROPERTY(EditAnywhere, Category = "HUD")
+	TSubclassOf<UStorageContentSlot> ContentSlotClass;
 
 	UPROPERTY(EditAnywhere, Category = "HUD")
 	UStorageContentWidget* ContentWidget = nullptr;
 
 protected:
-	/** Items stored */
+	/** Separate array for runtime items management. Items will be added/removed here during the game */
+	UPROPERTY(Transient, meta = (AllowPrivateAccess = "true"))
+	TArray<F_InventoryItem> RuntimeItems;
+
+	/** Contains manually set items */
 	UPROPERTY(EditAnywhere, Category = "Storage Defaults", meta = (AllowPrivateAccess = "true"))
-	TArray<F_InventoryItem> Items;
+	TArray<F_InventoryItem> OriginalItems;
 
 	/** Storage capacity */
 	UPROPERTY(EditAnywhere, Category = "Storage Defaults", meta = (AllowPrivateAccess = "true"))
 	int32 Capacity = 10;
 
 	/** The maximum number of items that can be generated */
+	UPROPERTY(EditAnywhere, Category = "Item Generation", meta = (AllowPrivateAccess = "true"))
 	int32 GenerationRange = 10;
+
+	/** List of item classes which can be generated */
+	UPROPERTY(EditAnywhere, Category = "Item Generation", meta = (AllowPrivateAccess = "true"))
+	TArray<TSubclassOf<UBaseItem>> GeneratableClasses;
 
 	/** Determines how rare/valuable the items stored will be */
 	UPROPERTY(EditAnywhere, Category = "Storage Defaults", meta = (AllowPrivateAccess = "true"))
@@ -74,8 +90,20 @@ public:
 	/** Generates random items in the provided array */
 	virtual void GenerateRandomItems() override;
 
-	/** Displays stored items on the screen */
+	/**
+	 * @brief Displays stored items on the screen.
+	 * 
+	 * This function creates a ContentWidget that displays the content
+	 * in vertically organised slots.
+	 */
 	virtual void DisplayContent() override;
+
+	/**
+	 * @brief Removes stored items from the screen.
+	 *
+	 * This function destroys the ContentWidget.
+	 */
+	virtual void HideContent() override;
 
 	virtual bool Interact(UInventoryComponent* Inventory) override;
 
@@ -86,6 +114,7 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 public:
-	FORCEINLINE const TArray<F_InventoryItem>& GetStoredItems() const { return Items; };
+	FORCEINLINE const TArray<F_InventoryItem>& GetStoredItems() const { return RuntimeItems; };
+	FORCEINLINE TArray<F_InventoryItem>& SetStoredItems() { return RuntimeItems; };
 
 };
