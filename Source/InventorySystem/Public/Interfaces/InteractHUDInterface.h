@@ -6,6 +6,7 @@
 #include "InteractHUDInterface.generated.h"
 
 
+class AActor;
 class UInventoryComponent;
 struct F_InventoryItem;
 
@@ -22,6 +23,8 @@ class INVENTORYSYSTEM_API IInteractHUDInterface
 	
 
 public:
+	virtual AActor* LookAt() = 0;
+
 	virtual void OpenPlayerInventory() = 0;
 
 	virtual void UpdateInventoryHUD(UInventoryComponent* Inventoryomponent) = 0;

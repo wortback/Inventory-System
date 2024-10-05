@@ -17,6 +17,8 @@
 #include "DrawDebugHelpers.h"
 #include "Inventory/BaseStorage.h"
 
+#include "InventorySystem.h"
+
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
@@ -25,9 +27,11 @@ DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
 AInventoryTestCharacter::AInventoryTestCharacter()
 {
+	PrimaryActorTick.bCanEverTick = true;
+
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
-		
+
 	// Don't rotate when the controller rotates. Let that just affect the camera.
 	bUseControllerRotationPitch = false;
 	bUseControllerRotationYaw = false;
@@ -86,6 +90,15 @@ void AInventoryTestCharacter::BeginPlay()
 	}
 }
 
+void AInventoryTestCharacter::Tick(float DeltaSeconds)
+{
+	// TODO Optimise LookAt call by calling it once a second instead of every frame
+	ViewedActor = LookAt();
+	if (GEngine)
+		GEngine->AddOnScreenDebugMessage(1, 15.0f, FColor::Yellow,
+			FString::Printf(TEXT("Currently viewed actor is %s"), *GetNameSafe(ViewedActor)));
+}
+
 //////////////////////////////////////////////////////////////////////////
 // Input
 
@@ -99,10 +112,10 @@ void AInventoryTestCharacter::SetupPlayerInputComponent(UInputComponent* PlayerI
 			Subsystem->AddMappingContext(DefaultMappingContext, 0);
 		}
 	}
-	
+
 	// Set up action bindings
 	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent)) {
-		
+
 		// Jumping
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ACharacter::Jump);
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
@@ -138,7 +151,7 @@ void AInventoryTestCharacter::Move(const FInputActionValue& Value)
 
 		// get forward vector
 		const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
-	
+
 		// get right vector 
 		const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
 
@@ -165,41 +178,10 @@ void AInventoryTestCharacter::Interact(const FInputActionValue& Value)
 {
 	UE_LOG(LogTemplateCharacter, Log, TEXT("Interact action is called."));
 
-	// Trace a BaseItem
-	FHitResult ItemTraceResult;
-
-
-	//FVector Start = ViewportCamera->GetComponentLocation();
-	FRotator CameraRotation = FollowCamera->GetComponentRotation();
-	FVector Start = GetMesh()->GetSocketLocation("head") + (CameraRotation.Vector() * 10.0f);
-
-	FVector End = (CameraRotation.Vector() * 150.0f) + Start;
-	FCollisionQueryParams CollisionQueryParamsLower;
-	CollisionQueryParamsLower.AddIgnoredActor(this);
-	CollisionQueryParamsLower.AddIgnoredComponent(GetMesh());
-	GetWorld()->LineTraceSingleByChannel(ItemTraceResult, Start, End, ECollisionChannel::ECC_Visibility);
-	DrawDebugLine(GetWorld(), Start, End, FColor::Yellow, false, 1.0f, 0, 3.0f); // Line thickness is 5.0f
-
-	if (ItemTraceResult.bBlockingHit)
+	IInteractableInterface* Interface = Cast<IInteractableInterface>(ViewedActor);
+	if (Interface)
 	{
-		
-		UE_LOG(LogTemplateCharacter, Warning, TEXT("Hit"));
-		DrawDebugSphere(GetWorld(), ItemTraceResult.Location, 15.f, 12, FColor::Red, false, 5.f);
-
-		AWorldItem* HitItem = Cast<AWorldItem>(ItemTraceResult.GetActor());
-		UE_LOG(LogTemplateCharacter, Warning, TEXT("Hit WorldItem %s"), *GetNameSafe(ItemTraceResult.GetComponent()));
-		if (HitItem)
-		{
-			UE_LOG(LogTemplateCharacter, Warning, TEXT("Hit WorldItem"));
-			bool success = HitItem->Interact(PlayerInventoryComponent);
-		} 
-
-		ABaseStorage* HitStorage = Cast<ABaseStorage>(ItemTraceResult.GetActor());
-		if (HitStorage)
-		{
-			UE_LOG(LogTemplateCharacter, Warning, TEXT("Hit BaseStorage"));
-			bool success = HitStorage->Interact(PlayerInventoryComponent);
-		}
+		Interface->Interact(PlayerInventoryComponent);
 	}
 }
 
@@ -231,6 +213,32 @@ void AInventoryTestCharacter::OpenInventory(const FInputActionValue& Value)
 }
 
 #pragma region InteractHUDInterfaceImplementation
+AActor* AInventoryTestCharacter::LookAt()
+{
+	// Trace a BaseItem
+	FHitResult ItemTraceResult;
+
+	FRotator CameraRotation = FollowCamera->GetComponentRotation();
+	FVector Start = GetMesh()->GetSocketLocation("head") + (CameraRotation.Vector() * 10.0f);
+
+	FVector End = (CameraRotation.Vector() * 150.0f) + Start;
+	FCollisionQueryParams CollisionQueryParamsLower;
+	CollisionQueryParamsLower.AddIgnoredActor(this);
+	CollisionQueryParamsLower.AddIgnoredComponent(GetMesh());
+	GetWorld()->LineTraceSingleByChannel(ItemTraceResult, Start, End, ECollisionChannel::ECC_Interactable);
+	//DrawDebugLine(GetWorld(), Start, End, FColor::Yellow, false, 1.0f, 0, 3.0f); // Line thickness is 5.0f
+
+	if (ItemTraceResult.bBlockingHit)
+	{
+		UE_LOG(LogTemplateCharacter, Warning, TEXT("Hit"));
+		DrawDebugSphere(GetWorld(), ItemTraceResult.Location, 15.f, 12, FColor::Red, false, 5.f);
+
+		return ItemTraceResult.GetActor();
+	}
+
+	return nullptr;
+}
+
 void AInventoryTestCharacter::OpenPlayerInventory()
 {
 	UE_LOG(LogTemplateCharacter, Log, TEXT("OpenPlayerInventory is called."));

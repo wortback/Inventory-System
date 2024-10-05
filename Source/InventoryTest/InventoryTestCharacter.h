@@ -65,6 +65,10 @@ class AInventoryTestCharacter : public ACharacter, public IInteractHUDInterface
 	/* Primary HUD on top of which any other HUD such as Inventory etc is mounted */
 	UPrimaryHUDWidget* PrimaryHUDWidget;
 
+private:
+	/** Actor the character is currently looking at */
+	AActor* ViewedActor = nullptr;
+
 public:
 	AInventoryTestCharacter();
 	
@@ -85,6 +89,8 @@ protected:
 
 #pragma region InteractHUDInterface
 protected:
+	virtual AActor* LookAt() override;
+
 	virtual void OpenPlayerInventory() override;
 
 	virtual void UpdateInventoryHUD(UInventoryComponent* Inventoryomponent) override;
@@ -104,6 +110,8 @@ protected:
 	
 	// To add mapping context
 	virtual void BeginPlay();
+
+	virtual void Tick(float DeltaSeconds) override;
 
 public:
 	/** Returns CameraBoom subobject **/

@@ -5,6 +5,7 @@
 #include "Components/BillboardComponent.h"
 #include "Inventory/InventoryComponent.h"
 #include "Items/BaseItem.h"
+#include "Components/SphereComponent.h"
 
 // Logging
 #include "InventorySystem.h"
@@ -20,10 +21,17 @@ AWorldItem::AWorldItem()
 	DefaultSceneComponent = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
 	Billboard = CreateDefaultSubobject<UBillboardComponent>(TEXT("Billboard"));
 	Mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("DisplayMesh"));
+	TraceSphere = CreateDefaultSubobject<USphereComponent>(TEXT("TraceSphere"));
+
+	TraceSphere->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	TraceSphere->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+	TraceSphere->SetCollisionResponseToChannel(ECollisionChannel::ECC_Interactable, ECollisionResponse::ECR_Block);
 
 	SetRootComponent(DefaultSceneComponent);
 	Billboard->SetupAttachment(RootComponent);
 	Mesh->SetupAttachment(RootComponent);
+	TraceSphere->SetupAttachment(RootComponent);
+
 }
 
 // Called when the game starts or when spawned

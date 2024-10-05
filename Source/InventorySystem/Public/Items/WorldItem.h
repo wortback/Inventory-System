@@ -9,6 +9,7 @@
 
 
 class UBaseItem;
+class USphereComponent;
 
 UCLASS()
 class INVENTORYSYSTEM_API AWorldItem : public AActor, public IInteractableInterface
@@ -28,6 +29,8 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	UStaticMeshComponent* Mesh = nullptr;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	USphereComponent* TraceSphere = nullptr;
 
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item Defaults", meta = (AllowPrivateAccess = "true"))
