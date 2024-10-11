@@ -37,6 +37,12 @@ private:
 
 	int32 MiscellaneousItemsCapacity = 30;
 
+	/** Separate slot for the equipped armour set */
+	F_InventoryItem EquippedArmour;
+
+	/** Separate slot for the equipped weapon */
+	F_InventoryItem EquippedWeapon;
+
 public:	
 	/** Default Constructor */
 	UInventoryComponent();
@@ -56,14 +62,6 @@ public:
 	bool ProcessItem(F_InventoryItem* Item);
 
 	/**
-	 * Adds Item to the inventory
-	 * 
-	 * @param Item The item to be added
-	 * @param IndexLocation The index of the position in the inventory where the item is to be hosted
-	 */
-	F_InventoryItem* AddItem(F_InventoryItem* Item, int IndexLocation);
-
-	/**
 	 * Removes Item from the inventory
 	 *
 	 * @param Item The item to be removed
@@ -72,13 +70,13 @@ public:
 	bool RemoveItem(F_InventoryItem* Item);
 
 	/**
-	 * Once an item is added to the inventory, find an available slot to host the item
-	 * 
-	 * @return available index location in the inventory
-	 * @return -1, if Item cannot be added	
+	 * Moves the Item from the inventory array to the equipped slot
+	 * Only applicable to weapons and armour sets
+	 *
+	 * @param Item The item to be equipped
+	 * @return true if the removal was successful
 	 */
-	int FindAvailableLocation(F_InventoryItem* Item);
-
+	bool EquipItem(F_InventoryItem* Item);
 
 	/**
 	 * Depending on ItemType returns the TArray the item can be assigned to
@@ -94,6 +92,25 @@ protected:
 
 	virtual void BeginPlay() override;
 
+private:
+	void InitialiseInventory();
+	/**
+	 * Once an item is added to the inventory, find an available slot to host the item
+	 *
+	 * @return available index location in the inventory
+	 * @return -1, if Item cannot be added
+	 */
+	int FindAvailableLocation(F_InventoryItem* Item);
+
+	/**
+	 * Adds Item to the inventory
+	 *
+	 * @param Item The item to be added
+	 * @param IndexLocation The index of the position in the inventory where the item is to be hosted
+	 */
+	F_InventoryItem* AddItem(F_InventoryItem* Item, int IndexLocation);
+
+	void SwapEquipped(F_InventoryItem& Item, F_InventoryItem& EquippedItem);
 
 
 public:	
@@ -108,5 +125,8 @@ public:
 	FORCEINLINE int32 GetQuestItemsCapacity() const { return QuestItemsCapacity; }
 	FORCEINLINE int32 GetConsumablesCapacity() const { return ConsumablesCapacity; }
 	FORCEINLINE int32 GetMiscellaneousItemsCapacity() const { return MiscellaneousItemsCapacity; }
+
+	FORCEINLINE const F_InventoryItem& GetEquippedArmour() const { return EquippedArmour; }
+	FORCEINLINE const F_InventoryItem& GetEquippedWeapon() const { return EquippedWeapon; }
 		
 };

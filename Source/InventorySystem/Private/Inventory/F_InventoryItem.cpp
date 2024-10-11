@@ -2,9 +2,10 @@
 
 
 #include "Inventory/F_InventoryItem.h"
+#include "System/CommonTypes.h"
 
 
-#define DEFAULT_INDEX_LOCATION -1
+
 
 
 

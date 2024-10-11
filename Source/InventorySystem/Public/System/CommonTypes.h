@@ -4,7 +4,18 @@
 #include "CoreMinimal.h"
 #include "CommonTypes.generated.h"
 
+//////////////////////////////////////////////////////////////////////////
+///		DEFINES
+//////////////////////////////////////////////////////////////////////////
 
+#define DEFAULT_INDEX_LOCATION -1
+#define EQ_ARMOUR_INDEX_LOCATION -2
+#define EQ_WEAPON_INDEX_LOCATION -3
+
+
+//////////////////////////////////////////////////////////////////////////
+///		ENUMS
+//////////////////////////////////////////////////////////////////////////
 
 UENUM()
 enum class EItemType : uint8
@@ -111,4 +122,13 @@ enum class EConsumableEffect : uint8
 	ECE_InstantRegeneration,
 	EAT_RegenerationSpeedup,
 	EAT_SpecialEffect,
+};
+
+/**
+ * Passive Effects of Armour //TODO
+ */
+UENUM()
+enum class EPassiveArmour : uint8
+{
+	EPA_None,
 };

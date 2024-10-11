@@ -33,7 +33,7 @@ void UPrimaryHUDWidget::UpdateInventory(const UInventoryComponent* InventoryComp
 		InventoryMenu->UpdateMenu();
 		UE_LOG(LogInventoryHUD, Log, TEXT("Current tab is %d"), InventoryMenu->GetItemTypeForCurrentTab());
 		InventoryMenu->InventoryBox->ClearChildren();
-	
+		
 		for (const F_InventoryItem& Item : InventoryComponent->GetItemsForItemType(InventoryMenu->GetItemTypeForCurrentTab()))
 		{
 			UInventorySlot* ChildSlot = CreateWidget<UInventorySlot>(GetWorld(), InventorySlotClass);
@@ -41,6 +41,14 @@ void UPrimaryHUDWidget::UpdateInventory(const UInventoryComponent* InventoryComp
 			ChildSlot->OwningHUD = this;
 			InventoryMenu->InventoryBox->AddChildToWrapBox(ChildSlot);
 		}
+
+		InventoryMenu->EquippedArmour->Item = InventoryComponent->GetEquippedArmour();
+		InventoryMenu->EquippedArmour->OwningHUD = this;
+		InventoryMenu->EquippedArmour->UpdateSlotContent();
+
+		InventoryMenu->EquippedWeapon->Item = InventoryComponent->GetEquippedWeapon();
+		InventoryMenu->EquippedWeapon->OwningHUD = this;
+		InventoryMenu->EquippedWeapon->UpdateSlotContent();
 	}
 	else
 	{
@@ -65,11 +73,14 @@ void UPrimaryHUDWidget::ClosePlayerInventory()
 
 FReply UPrimaryHUDWidget::NativeOnKeyDown(const FGeometry& InGeometry, const FKeyEvent& InKeyEvent)
 {
-    if (InKeyEvent.GetKey().GetFName() == "Tab" || InKeyEvent.GetKey().GetFName() == "Escape")
+	FName Key = InKeyEvent.GetKey().GetFName();
+	if (Key == "Tab" || Key == "Escape")
     {
 		ClosePlayerInventory();
     }
-	else if (InKeyEvent.GetKey().GetFName() == "D")
+	// TODO Refactor (Maybe put it in inventory widget instead)
+	
+	else if (Key == "D" || Key == "E")
 	{
 		if (OverSlot)
 		{
@@ -80,7 +91,16 @@ FReply UPrimaryHUDWidget::NativeOnKeyDown(const FGeometry& InGeometry, const FKe
 				if (Interface)
 				{
 					UE_LOG(LogTemp, Warning, TEXT("Interface Cast sccessful"));
-					Interface->RemoveItem(&(OverSlot->Item));
+					
+					if (Key == "D")
+					{
+						Interface->RemoveItem(&(OverSlot->Item));
+					}
+					else 
+					{
+						Interface->EquipItem(&(OverSlot->Item));
+					}
+					
 					
 					if (OverSlot->Item.OwningInventory)
 					{

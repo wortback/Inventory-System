@@ -34,4 +34,6 @@ public:
 	virtual void RemoveItem(F_InventoryItem* Item) = 0;
 
 	virtual bool ProcessItem(F_InventoryItem* Item) = 0;
+
+	virtual bool EquipItem(F_InventoryItem* Item) = 0;
 };

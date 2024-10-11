@@ -12,6 +12,29 @@
 #include "InventorySystem.h"
 
 
+void UInventorySlot::UpdateSlotContent()
+{
+	if (Item.ItemType != EItemType::EIT_None)
+	{
+		UBaseItem* BaseItem = Cast<UBaseItem>(Item.ItemClass->GetDefaultObject(true));
+		
+		if (Thumbnail)
+		{
+			UE_LOG(LogInventoryHUD, Log, TEXT("Image is not null."));
+		}
+
+		// Since by default the slot image is transparent, we set another colour to remove tranparancy of the image first
+		Thumbnail->SetColorAndOpacity(FLinearColor::White);
+		Thumbnail->SetBrushFromTexture(BaseItem->Thumbnail);
+
+		ItemName->SetText(BaseItem->ItemName);
+		if (BaseItem->bIsStackable)
+		{
+			AmountText->SetText(FText::FromString(FString::FromInt(Item.Quantity)));
+		}
+	}
+}
+
 void UInventorySlot::NativeConstruct()
 {
 	if (Item.Quantity > 0)
@@ -33,6 +56,8 @@ void UInventorySlot::NativeConstruct()
 	}
 	else
 	{
+		// NB: if SetBrushFromTexture is called, the image appears transparent, because the alpha 
+		// set by transparent colour persists until modified
 		Thumbnail->SetColorAndOpacity(FLinearColor::Transparent);
 		ItemName->SetText(FText::GetEmpty());
 		AmountText->SetText(FText::GetEmpty());

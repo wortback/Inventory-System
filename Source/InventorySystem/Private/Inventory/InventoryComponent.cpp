@@ -101,6 +101,46 @@ bool UInventoryComponent::RemoveItem(F_InventoryItem* Item)
 	return true;
 }
 
+bool UInventoryComponent::EquipItem(F_InventoryItem* Item)
+{
+	switch (Item->ItemType)
+	{
+	case EItemType::EIT_Armour:
+		UE_LOG(LogInventoryComponent, Log, TEXT("Equipping the armour set..."));
+		SwapEquipped(*Item, EquippedArmour);
+		return true;
+
+	case EItemType::EIT_Weapon:
+		UE_LOG(LogInventoryComponent, Log, TEXT("Equipping the weapon..."));
+		SwapEquipped(*Item, EquippedWeapon);
+		return true;
+
+	case EItemType::EIT_None:
+	case EItemType::EIT_Miscellaneous:
+	case EItemType::EIT_Quest:
+	default:
+		UE_LOG(LogInventoryComponent, Warning, TEXT("This item cannot be equiped."));
+		return false;
+	}
+}
+
+void UInventoryComponent::SwapEquipped(F_InventoryItem& Item, F_InventoryItem& EquippedItem)
+{
+	F_InventoryItem* ItemAtLocation = &SetItemsForItemType(Item.ItemType)[Item.IndexLocation];
+	F_InventoryItem Temp;
+	Temp.ItemClass = EquippedItem.ItemClass;
+	Temp.ItemType = EquippedItem.ItemType;
+	Temp.Quantity = EquippedItem.Quantity;
+
+	EquippedItem.ItemClass = ItemAtLocation->ItemClass;
+	EquippedItem.ItemType = ItemAtLocation->ItemType;
+	EquippedItem.Quantity = ItemAtLocation->Quantity;
+
+	ItemAtLocation->ItemClass = Temp.ItemClass;
+	ItemAtLocation->ItemType = Temp.ItemType;
+	ItemAtLocation->Quantity = Temp.Quantity;
+}
+
 const TArray<F_InventoryItem>& UInventoryComponent::GetItemsForItemType(EItemType ItemType) const
 {
 	switch (ItemType)
@@ -173,14 +213,13 @@ TArray<F_InventoryItem>& UInventoryComponent::SetItemsForItemType(EItemType Item
 	}
 }
 
-// Called when the game starts
-void UInventoryComponent::BeginPlay()
+void UInventoryComponent::InitialiseInventory()
 {
-	Super::BeginPlay();
-
+	// Initialise all arrays
 	Equipment.SetNum(EquipmentCapacity);
 	for (int i = 0; i <= EquipmentCapacity - 1; ++i)
 	{
+		Equipment[i].ItemClass = UBaseItem::StaticClass();
 		Equipment[i].Quantity = 0;
 		Equipment[i].OwningInventory = this;
 		Equipment[i].IndexLocation = i;
@@ -190,6 +229,7 @@ void UInventoryComponent::BeginPlay()
 	QuestItems.SetNum(QuestItemsCapacity);
 	for (int i = 0; i <= QuestItemsCapacity - 1; ++i)
 	{
+		QuestItems[i].ItemClass = UBaseItem::StaticClass();
 		QuestItems[i].Quantity = 0;
 		QuestItems[i].OwningInventory = this;
 		QuestItems[i].IndexLocation = i;
@@ -199,6 +239,7 @@ void UInventoryComponent::BeginPlay()
 	Consumables.SetNum(ConsumablesCapacity);
 	for (int i = 0; i <= ConsumablesCapacity - 1; ++i)
 	{
+		Consumables[i].ItemClass = UBaseItem::StaticClass();
 		Consumables[i].Quantity = 0;
 		Consumables[i].OwningInventory = this;
 		Consumables[i].IndexLocation = i;
@@ -208,11 +249,33 @@ void UInventoryComponent::BeginPlay()
 	MiscellaneousItems.SetNum(MiscellaneousItemsCapacity);
 	for (int i = 0; i <= MiscellaneousItemsCapacity - 1; ++i)
 	{
+		MiscellaneousItems[i].ItemClass = UBaseItem::StaticClass();
 		MiscellaneousItems[i].Quantity = 0;
 		MiscellaneousItems[i].OwningInventory = this;
 		MiscellaneousItems[i].IndexLocation = i;
 		MiscellaneousItems[i].ItemType = EItemType::EIT_None;
 	}
+
+	// Initialise Equipped slots
+	EquippedArmour.Quantity = 0;
+	EquippedArmour.OwningInventory = this;
+	EquippedArmour.IndexLocation = EQ_ARMOUR_INDEX_LOCATION;
+	EquippedArmour.ItemClass = UBaseItem::StaticClass();
+	EquippedArmour.ItemType = EItemType::EIT_None;
+
+	EquippedWeapon.Quantity = 0;
+	EquippedWeapon.OwningInventory = this;
+	EquippedWeapon.IndexLocation = EQ_WEAPON_INDEX_LOCATION;
+	EquippedWeapon.ItemClass = UBaseItem::StaticClass();
+	EquippedWeapon.ItemType = EItemType::EIT_None;
+}
+
+// Called when the game starts
+void UInventoryComponent::BeginPlay()
+{
+	Super::BeginPlay();
+
+	InitialiseInventory();
 }
 
 

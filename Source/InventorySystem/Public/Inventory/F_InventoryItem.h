@@ -48,7 +48,7 @@ public:
     // Other constructors
     F_InventoryItem(const F_InventoryItem& Item);
 
-    /** Reset the item to it's defaults (only its class, quantity, and type) */
+    /** Reset the item to it's defaults (only its class, quantity, and type). Preserves the index */
     void ClearItem();
     
 };

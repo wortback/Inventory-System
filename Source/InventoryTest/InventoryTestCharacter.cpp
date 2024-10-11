@@ -15,7 +15,9 @@
 #include "InventorySystem/Public/Widgets/PrimaryHUDWidget.h"
 #include "InventorySystem/Public/Inventory/InventoryComponent.h"
 #include "DrawDebugHelpers.h"
-#include "Inventory/BaseStorage.h"
+#include "InventorySystem/Public/Inventory/BaseStorage.h"
+#include "InventorySystem/Public/Inventory/F_InventoryItem.h"
+#include "InventorySystem/Public/System/CommonTypes.h"
 
 #include "InventorySystem.h"
 
@@ -96,7 +98,7 @@ void AInventoryTestCharacter::Tick(float DeltaSeconds)
 	ViewedActor = LookAt();
 	if (GEngine)
 		GEngine->AddOnScreenDebugMessage(1, 15.0f, FColor::Yellow,
-			FString::Printf(TEXT("Currently viewed actor is %s"), *GetNameSafe(ViewedActor)));
+			FString::Printf(TEXT("Equipped Armour Type %s"), *EItemTypeToString(PlayerInventoryComponent->GetEquippedArmour().ItemType)));
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -279,6 +281,11 @@ void AInventoryTestCharacter::RemoveItem(F_InventoryItem* Item)
 bool AInventoryTestCharacter::ProcessItem(F_InventoryItem* Item)
 {
 	return PlayerInventoryComponent->ProcessItem(Item);
+}
+
+bool AInventoryTestCharacter::EquipItem(F_InventoryItem* Item)
+{
+	return PlayerInventoryComponent->EquipItem(Item);
 }
 
 #pragma endregion InteractHUDInterfaceImplementation

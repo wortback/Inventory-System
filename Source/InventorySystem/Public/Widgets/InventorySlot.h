@@ -39,6 +39,8 @@ public:
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(ExposeOnSpawn = "true"))
 	UPrimaryHUDWidget* OwningHUD;
+public:
+	void UpdateSlotContent();
 
 public:
 	virtual void NativeConstruct() override;

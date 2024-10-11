@@ -101,6 +101,8 @@ protected:
 
 	virtual bool ProcessItem(F_InventoryItem* Item) override;
 
+	virtual bool EquipItem(F_InventoryItem* Item) override;
+
 #pragma endregion InteractHUDInterface
 			
 

@@ -14,6 +14,7 @@
 class UWrapBox;
 class UTextBlock;
 class UTabButtonWidget;
+class UInventorySlot;
 
 
 /**
@@ -34,6 +35,12 @@ public:
 
 	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
 	TObjectPtr<UTabButtonWidget> TabSwitch;
+
+	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
+	TObjectPtr<UInventorySlot> EquippedArmour;
+
+	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
+	TObjectPtr<UInventorySlot> EquippedWeapon;
 
 public:
 	/**
