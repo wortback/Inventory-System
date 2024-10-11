@@ -115,9 +115,18 @@ void ABaseStorage::HideContent()
 bool ABaseStorage::Interact(UInventoryComponent* Inventory)
 {
 	UE_LOG(LogInventoryHUD, Log, TEXT("Intarect for BaseStorage is called."));
-	DisplayContent();
 
-	return true;
+	// If there's at least one item in the inventory that is not of type NONE, display the storage content
+	// TODO: Maybe optimise to prevent two times iterating over the array (one time here, one in DisplayContent)
+	for (F_InventoryItem& Item : RuntimeItems)
+	{
+		if (Item.ItemType != EItemType::EIT_None && ContentSlotClass)
+		{
+			DisplayContent();
+			return true;
+		}
+	}
+	return false;
 }
 
 // Called every frame

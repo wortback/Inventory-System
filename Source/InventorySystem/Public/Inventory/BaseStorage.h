@@ -105,6 +105,11 @@ public:
 	 */
 	virtual void HideContent() override;
 
+	/**
+	 * @return true if the storage is not empty
+	 * 
+	 * That is if the Items array has at least one item of the type that it not EIT_None
+	 */
 	virtual bool Interact(UInventoryComponent* Inventory) override;
 
 #pragma endregion StorageInterface
