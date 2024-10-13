@@ -12,6 +12,7 @@
 
 class UInventoryComponent;
 class UInventorySlot;
+class UPlayerInventoryWindow;
 /**
  * 
  */
@@ -25,6 +26,13 @@ public:
 	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
 	TObjectPtr<UInventoryWidget> InventoryMenu;
 
+	/** Item exchange with NPC */
+	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
+	TObjectPtr<UPlayerInventoryWindow> PlayerInventory;
+
+	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
+	TObjectPtr<UPlayerInventoryWindow> NPCInventory;
+
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Subwidgets")
 	TSubclassOf<UInventorySlot> InventorySlotClass;
 
@@ -36,9 +44,15 @@ public:
 public:
 	void ShowPlayerInventory(bool bShowInventory);
 
+	void ShowNPCInventory(bool bShowInventory);
+
 	void UpdateInventory(const UInventoryComponent* InventoryComponent);
 
+	void UpdateInventory(const UInventoryComponent* PlayerComp, const UInventoryComponent* NPCComp);
+
 	void ClosePlayerInventory();
+
+	void CloseNPCInventory();
 
 	FReply NativeOnKeyDown(const FGeometry& InGeometry, const FKeyEvent& InKeyEvent) override;
 

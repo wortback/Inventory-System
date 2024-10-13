@@ -6,6 +6,7 @@
 #include "GameFramework/Character.h"
 #include "Logging/LogMacros.h"
 #include "InventorySystem/Public/Interfaces/InteractHUDInterface.h"
+
 #include "InventoryTestCharacter.generated.h"
 
 class USpringArmComponent;
@@ -69,6 +70,8 @@ private:
 	/** Actor the character is currently looking at */
 	AActor* ViewedActor = nullptr;
 
+	UInventoryComponent* NPCInventoryComp = nullptr;
+
 public:
 	AInventoryTestCharacter();
 	
@@ -93,15 +96,21 @@ protected:
 
 	virtual void OpenPlayerInventory() override;
 
-	virtual void UpdateInventoryHUD(UInventoryComponent* Inventoryomponent) override;
+	virtual void OpenNPCInventory(UInventoryComponent* NPCInventoryComponent) override;
+
+	virtual void UpdateInventoryHUD(UInventoryComponent* InventoryComponent) override;
 
 	virtual void UpdateInventoryHUD() override;
+
+	virtual void UpdateInventoryHUD(UInventoryComponent* PlayerComp, UInventoryComponent* NPCComp) override;
 
 	virtual void RemoveItem(F_InventoryItem* Item) override;
 
 	virtual bool ProcessItem(F_InventoryItem* Item) override;
 
 	virtual bool EquipItem(F_InventoryItem* Item) override;
+
+	virtual void UpdateNPCComponentPtr(UInventoryComponent* InventoryComp) override;
 
 #pragma endregion InteractHUDInterface
 			

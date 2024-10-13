@@ -73,7 +73,7 @@ void ABaseStorage::DisplayContent()
 
 			for (F_InventoryItem& Item : RuntimeItems)
 			{
-				if (Item.ItemType != EItemType::EIT_None && ContentSlotClass)
+				if (Item.ItemType != EItemType::EIT_None)
 				{
 					UStorageContentSlot* ChildSlot = CreateWidget<UStorageContentSlot>(GetWorld(), ContentSlotClass);
 					ChildSlot->SlotItem = &Item;
@@ -120,10 +120,13 @@ bool ABaseStorage::Interact(UInventoryComponent* Inventory)
 	// TODO: Maybe optimise to prevent two times iterating over the array (one time here, one in DisplayContent)
 	for (F_InventoryItem& Item : RuntimeItems)
 	{
-		if (Item.ItemType != EItemType::EIT_None && ContentSlotClass)
+		if (ContentSlotClass)
 		{
-			DisplayContent();
-			return true;
+			if (Item.ItemType != EItemType::EIT_None)
+			{
+				DisplayContent();
+				return true;
+			}
 		}
 	}
 	return false;

@@ -232,8 +232,7 @@ AActor* AInventoryTestCharacter::LookAt()
 
 	if (ItemTraceResult.bBlockingHit)
 	{
-		UE_LOG(LogTemplateCharacter, Warning, TEXT("Hit"));
-		DrawDebugSphere(GetWorld(), ItemTraceResult.Location, 15.f, 12, FColor::Red, false, 5.f);
+		DrawDebugSphere(GetWorld(), ItemTraceResult.Location, 5.f, 12, FColor::Red, false, 5.f);
 
 		return ItemTraceResult.GetActor();
 	}
@@ -254,6 +253,43 @@ void AInventoryTestCharacter::OpenPlayerInventory()
 	}
 }
 
+void AInventoryTestCharacter::OpenNPCInventory(UInventoryComponent* NPCInventoryComponent)
+{
+	UE_LOG(LogTemplateCharacter, Log, TEXT("OpenNPCInventory is called."));
+
+	UpdateNPCComponentPtr(NPCInventoryComponent);
+
+	APlayerController* PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
+	if (PlayerController)
+	{
+		PlayerController->bShowMouseCursor = true;
+
+		FInputModeUIOnly InputMode;
+		InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
+
+		if (PrimaryHUDWidget)
+		{
+			InputMode.SetWidgetToFocus(PrimaryHUDWidget->TakeWidget());
+
+			PlayerController->SetInputMode(InputMode);
+			PrimaryHUDWidget->SetFocus();
+			
+			UpdateInventoryHUD(PlayerInventoryComponent, NPCInventoryComponent);
+
+			PrimaryHUDWidget->ShowNPCInventory(true);
+		}
+	}
+}
+
+void AInventoryTestCharacter::UpdateInventoryHUD(UInventoryComponent* PlayerComp, UInventoryComponent* NPCComp)
+{
+	UE_LOG(LogTemplateCharacter, Log, TEXT("UpdateInventoryHUD is called."));
+	if (PrimaryHUDWidget)
+	{
+		PrimaryHUDWidget->UpdateInventory(PlayerComp, NPCComp);
+	}
+}
+
 void AInventoryTestCharacter::UpdateInventoryHUD(UInventoryComponent* InventoryComponent)
 {
 	UE_LOG(LogTemplateCharacter, Log, TEXT("UpdateInventoryHUD is called."));
@@ -266,10 +302,19 @@ void AInventoryTestCharacter::UpdateInventoryHUD(UInventoryComponent* InventoryC
 void AInventoryTestCharacter::UpdateInventoryHUD()
 {
 	UE_LOG(LogTemplateCharacter, Log, TEXT("UpdateInventoryHUD is called."));
+
 	if (PrimaryHUDWidget)
 	{
-		PrimaryHUDWidget->UpdateInventory(PlayerInventoryComponent);
+		if (NPCInventoryComp)
+		{
+			PrimaryHUDWidget->UpdateInventory(PlayerInventoryComponent, NPCInventoryComp);
+		}
+		else
+		{
+			PrimaryHUDWidget->UpdateInventory(PlayerInventoryComponent);
+		}
 	}
+	
 }
 
 void AInventoryTestCharacter::RemoveItem(F_InventoryItem* Item)
@@ -286,6 +331,11 @@ bool AInventoryTestCharacter::ProcessItem(F_InventoryItem* Item)
 bool AInventoryTestCharacter::EquipItem(F_InventoryItem* Item)
 {
 	return PlayerInventoryComponent->EquipItem(Item);
+}
+
+void AInventoryTestCharacter::UpdateNPCComponentPtr(UInventoryComponent* InventoryComp)
+{
+	NPCInventoryComp = InventoryComp;
 }
 
 #pragma endregion InteractHUDInterfaceImplementation
