@@ -56,6 +56,8 @@ public:
 
 	FReply NativeOnKeyDown(const FGeometry& InGeometry, const FKeyEvent& InKeyEvent) override;
 
+	void ExecuteKeyBinding(FName Key);
+
 	void NativeOnFocusLost(const FFocusEvent& InFocusEvent) override;
 
 	/**

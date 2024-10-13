@@ -25,6 +25,8 @@ class INVENTORYSYSTEM_API IInteractHUDInterface
 public:
 	virtual AActor* LookAt() = 0;
 
+	virtual UInventoryComponent* GetInventoryComponent() const = 0;
+
 	virtual void OpenPlayerInventory() = 0;
 
 	virtual void OpenNPCInventory(UInventoryComponent* NPCInventoryComponent) = 0;
@@ -40,6 +42,10 @@ public:
 	virtual bool ProcessItem(F_InventoryItem* Item) = 0;
 
 	virtual bool EquipItem(F_InventoryItem* Item) = 0;
+
+	virtual bool SellItem(F_InventoryItem* Item) = 0;
+
+	virtual bool BuyItem(F_InventoryItem* Item) = 0;
 
 	virtual void UpdateNPCComponentPtr(UInventoryComponent* InventoryComp) = 0;
 };

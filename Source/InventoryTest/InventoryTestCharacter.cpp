@@ -330,7 +330,40 @@ bool AInventoryTestCharacter::ProcessItem(F_InventoryItem* Item)
 
 bool AInventoryTestCharacter::EquipItem(F_InventoryItem* Item)
 {
-	return PlayerInventoryComponent->EquipItem(Item);
+	// If the character is in the trade mode with an NPC, don't equip items. 
+	if (!NPCInventoryComp)
+	{
+		return PlayerInventoryComponent->EquipItem(Item);
+	}
+	return false;
+}
+
+bool AInventoryTestCharacter::SellItem(F_InventoryItem* Item)
+{
+	// If the character is in the trade mode with an NPC, don't equip items. 
+	if (NPCInventoryComp)
+	{
+		if (NPCInventoryComp->ProcessItem(Item))
+		{
+			PlayerInventoryComponent->RemoveItem(Item);
+			return true;
+		}
+	}
+	return false;
+}
+
+bool AInventoryTestCharacter::BuyItem(F_InventoryItem* Item)
+{
+	// If the character is in the trade mode with an NPC, don't equip items. 
+	if (NPCInventoryComp)
+	{
+		if (NPCInventoryComp->RemoveItem(Item))
+		{
+			PlayerInventoryComponent->ProcessItem(Item);
+			return true;
+		}
+	}
+	return false;
 }
 
 void AInventoryTestCharacter::UpdateNPCComponentPtr(UInventoryComponent* InventoryComp)

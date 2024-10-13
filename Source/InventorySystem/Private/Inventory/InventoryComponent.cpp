@@ -31,32 +31,34 @@ void UInventoryComponent::UpdateInventoryHUD()
 		{
 			Interface->UpdateInventoryHUD(this);
 		}
-
 	}
 }
 
 bool UInventoryComponent::ProcessItem(F_InventoryItem* Item)
 {
-	int32 ItemIndexLocation = FindAvailableLocation(Item);
-	UE_LOG(LogInventoryComponent, Log, TEXT("ItemType: %s"), *(EItemTypeToString(Item->ItemType)));
-
-	if (ItemIndexLocation >= 0)
+	if (Item->ItemType != EItemType::EIT_None)
 	{
-		F_InventoryItem* AddedItem = AddItem(Item, ItemIndexLocation);
-		if (AddedItem->Quantity > 0)
+		int32 ItemIndexLocation = FindAvailableLocation(Item);
+		UE_LOG(LogInventoryComponent, Log, TEXT("ItemType: %s"), *(EItemTypeToString(Item->ItemType)));
+
+		if (ItemIndexLocation >= 0)
 		{
-			ProcessItem(AddedItem);
+			F_InventoryItem* AddedItem = AddItem(Item, ItemIndexLocation);
+			if (AddedItem->Quantity > 0)
+			{
+				ProcessItem(AddedItem);
+			}
+			else
+			{
+				delete AddedItem;
+				return true;
+			}
 		}
 		else
 		{
-			delete AddedItem;
-			return true;
+			UE_LOG(LogInventoryComponent, Warning, TEXT("Inventory is full"));
+			return false;
 		}
-	}
-	else
-	{
-		UE_LOG(LogInventoryComponent, Warning, TEXT("Inventory is full"));
-		return false;
 	}
 
 	return false;
@@ -92,13 +94,17 @@ F_InventoryItem* UInventoryComponent::AddItem(F_InventoryItem* Item, int IndexLo
 
 bool UInventoryComponent::RemoveItem(F_InventoryItem* Item)
 {
-	F_InventoryItem* ItemAtLocation = &SetItemsForItemType(Item->ItemType)[Item->IndexLocation];
-	ItemAtLocation->ItemClass = UBaseItem::StaticClass();
-	ItemAtLocation->OwningInventory = nullptr;
-	ItemAtLocation->Quantity = 0;
-	ItemAtLocation->ItemType = EItemType::EIT_None;
+	if (Item->ItemType != EItemType::EIT_None)
+	{
+		F_InventoryItem* ItemAtLocation = &SetItemsForItemType(Item->ItemType)[Item->IndexLocation];
+		ItemAtLocation->ItemClass = UBaseItem::StaticClass();
+		ItemAtLocation->OwningInventory = nullptr;
+		ItemAtLocation->Quantity = 0;
+		ItemAtLocation->ItemType = EItemType::EIT_None;
 
-	return true;
+		return true;
+	}
+	return false;
 }
 
 bool UInventoryComponent::EquipItem(F_InventoryItem* Item)

@@ -110,7 +110,13 @@ protected:
 
 	virtual bool EquipItem(F_InventoryItem* Item) override;
 
+	virtual bool SellItem(F_InventoryItem* Item) override;
+
+	virtual bool BuyItem(F_InventoryItem* Item) override;
+
 	virtual void UpdateNPCComponentPtr(UInventoryComponent* InventoryComp) override;
+
+	virtual UInventoryComponent* GetInventoryComponent() const override { return PlayerInventoryComponent; }
 
 #pragma endregion InteractHUDInterface
 			

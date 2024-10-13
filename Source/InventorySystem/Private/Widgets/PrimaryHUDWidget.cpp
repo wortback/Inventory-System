@@ -150,43 +150,45 @@ FReply UPrimaryHUDWidget::NativeOnKeyDown(const FGeometry& InGeometry, const FKe
 		ClosePlayerInventory();
 		CloseNPCInventory();
     }
-	// TODO Refactor (Maybe put it in inventory widget instead)
 	
 	else if (Key == "D" || Key == "E")
 	{
 		if (OverSlot)
 		{
-			ACharacter* PlayerCharacter = Cast<ACharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
-			if (PlayerCharacter)
-			{
-				IInteractHUDInterface* Interface = Cast<IInteractHUDInterface>(PlayerCharacter);
-				if (Interface)
-				{
-					UE_LOG(LogTemp, Warning, TEXT("Interface Cast sccessful"));
-					
-					if (Key == "D")
-					{
-						Interface->RemoveItem(&(OverSlot->Item));
-					}
-					else 
-					{
-						Interface->EquipItem(&(OverSlot->Item));
-					}
-					
-					
-					if (OverSlot->Item.OwningInventory)
-					{
-						Interface->UpdateInventoryHUD(OverSlot->Item.OwningInventory);
-					}
-				}
-				else
-				{
-					UE_LOG(LogTemp, Warning, TEXT("Interface Cast unsuccessful"));
-				}
-			}
+			ExecuteKeyBinding(Key);
 		}
 	}
 	return FReply::Handled();
+}
+
+void UPrimaryHUDWidget::ExecuteKeyBinding(FName Key)
+{
+	ACharacter* PlayerCharacter = Cast<ACharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
+	if (PlayerCharacter)
+	{
+		IInteractHUDInterface* Interface = Cast<IInteractHUDInterface>(PlayerCharacter);
+		if (Interface)
+		{
+			if (Key == "D")
+			{
+				Interface->RemoveItem(&(OverSlot->Item));
+			}
+			else if (Key == "E")
+			{
+				Interface->EquipItem(&(OverSlot->Item));
+				if (OverSlot->Item.OwningInventory == Interface->GetInventoryComponent())
+				{
+					Interface->SellItem(&(OverSlot->Item));
+				}
+				else
+				{
+					Interface->BuyItem(&(OverSlot->Item));
+				}
+				
+			}
+			Interface->UpdateInventoryHUD();
+		}
+	}
 }
 
 void UPrimaryHUDWidget::NativeOnFocusLost(const FFocusEvent& InFocusEvent)

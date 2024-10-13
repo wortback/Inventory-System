@@ -25,14 +25,12 @@ void UTabButtonWidget::NativeConstruct()
 
 void UTabButtonWidget::OnEquipmentTabPressed()
 {
-	UE_LOG(LogInventoryHUD, Warning, TEXT("OnEquipmentTabPressed!"));
 	SetCurrentTab(EInventoryWidgetTab::EIWT_Equipment);
 	UpdateInventoryHUD();
 }
 
 void UTabButtonWidget::OnQuestTabPressed()
 {
-	UE_LOG(LogInventoryHUD, Warning, TEXT("OnQuestTabPressed!"));
 	SetCurrentTab(EInventoryWidgetTab::EIWT_Quest);
 	UpdateInventoryHUD();
 }
