@@ -25,6 +25,10 @@ enum class EStorageRank : uint8
 	ESR_Luxurious,
 };
 
+/**
+ * Base Class for all containers that are capable of storing items (e.g. chests, strongboxes, barrels, etc)
+ * 
+ */
 UCLASS()
 class INVENTORYSYSTEM_API ABaseStorage : public AActor, public IStorageInterface, public IInteractableInterface
 {

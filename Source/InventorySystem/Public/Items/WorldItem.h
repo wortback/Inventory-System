@@ -11,6 +11,9 @@
 class UBaseItem;
 class USphereComponent;
 
+/**
+ * Actor that represents an Item on a level
+ */
 UCLASS()
 class INVENTORYSYSTEM_API AWorldItem : public AActor, public IInteractableInterface
 {

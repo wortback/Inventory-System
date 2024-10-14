@@ -19,7 +19,7 @@ class UPlayerInventoryWindow;
 
 
 /**
- * Widget that displays the content of InventoryComponent, namely contains the corresponding slots of 4 items arrays.
+ * Widget for the main inventory window
  * 
  */
 UCLASS()

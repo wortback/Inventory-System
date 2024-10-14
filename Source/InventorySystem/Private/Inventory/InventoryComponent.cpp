@@ -2,7 +2,7 @@
 
 
 #include "Inventory/InventoryComponent.h"
-#include "Interfaces/InteractHUDInterface.h"
+#include "Interfaces/InventoryHUDInterface.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/Character.h"
 #include "System/CommonTypes.h"
@@ -19,19 +19,6 @@ UInventoryComponent::UInventoryComponent()
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = false;
-}
-
-void UInventoryComponent::UpdateInventoryHUD()
-{
-	ACharacter* PlayerCharacter = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
-	if (PlayerCharacter)
-	{
-		IInteractHUDInterface* Interface = Cast<IInteractHUDInterface>(PlayerCharacter);
-		if (Interface)
-		{
-			Interface->UpdateInventoryHUD(this);
-		}
-	}
 }
 
 bool UInventoryComponent::ProcessItem(F_InventoryItem* Item)

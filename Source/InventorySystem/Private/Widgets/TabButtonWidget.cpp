@@ -4,7 +4,7 @@
 #include "Widgets/TabButtonWidget.h"
 #include "Widgets/BaseButton.h"
 #include "Kismet/GameplayStatics.h"
-#include "Interfaces/InteractHUDInterface.h"
+#include "Interfaces/InventoryHUDInterface.h"
 #include "Widgets/InventoryWidget.h"
 #include "GameFramework/Character.h"
 
@@ -54,15 +54,15 @@ void UTabButtonWidget::UpdateInventoryHUD()
 	ACharacter* PlayerCharacter = Cast<ACharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
 	if (PlayerCharacter)
 	{
-		IInteractHUDInterface* Interface = Cast<IInteractHUDInterface>(PlayerCharacter);
+		IInventoryHUDInterface* Interface = Cast<IInventoryHUDInterface>(PlayerCharacter);
 		if (Interface)
 		{
-			UE_LOG(LogInventoryHUD, Log, TEXT("Interface Cast to IInteractHUDInterface successful"));
+			//UE_LOG(LogInventoryHUD, Log, TEXT("Interface Cast to IInventoryHUDInterface successful"));
 			Interface->UpdateInventoryHUD();
 		}
-		else
-		{
-			UE_LOG(LogInventoryHUD, Warning, TEXT("Interface Cast to IInteractHUDInterface unsuccessful"));
-		}
+// 		else
+// 		{
+// 			UE_LOG(LogInventoryHUD, Warning, TEXT("Interface Cast to IInventoryHUDInterface unsuccessful"));
+// 		}
 	}
 }

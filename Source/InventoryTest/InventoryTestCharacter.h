@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "Logging/LogMacros.h"
-#include "InventorySystem/Public/Interfaces/InteractHUDInterface.h"
+#include "InventorySystem/Public/Interfaces/InventoryHUDInterface.h"
 
 #include "InventoryTestCharacter.generated.h"
 
@@ -21,7 +21,7 @@ DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
 
 
 UCLASS(config=Game)
-class AInventoryTestCharacter : public ACharacter, public IInteractHUDInterface
+class AInventoryTestCharacter : public ACharacter, public IInventoryHUDInterface
 {
 	GENERATED_BODY()
 
@@ -90,7 +90,7 @@ protected:
 	void OpenInventory(const FInputActionValue& Value);
 
 
-#pragma region InteractHUDInterface
+#pragma region InventoryHUDInterface
 protected:
 	virtual AActor* LookAt() override;
 
@@ -98,11 +98,10 @@ protected:
 
 	virtual void OpenNPCInventory(UInventoryComponent* NPCInventoryComponent) override;
 
-	virtual void UpdateInventoryHUD(UInventoryComponent* InventoryComponent) override;
-
+	/** 
+	* Depending on whether the character is trading with an NPC, updates PlayerInventoryWindow and NPCInventoryWindow
+	* or the inventory menu */
 	virtual void UpdateInventoryHUD() override;
-
-	virtual void UpdateInventoryHUD(UInventoryComponent* PlayerComp, UInventoryComponent* NPCComp) override;
 
 	virtual void RemoveItem(F_InventoryItem* Item) override;
 
@@ -118,7 +117,14 @@ protected:
 
 	virtual UInventoryComponent* GetInventoryComponent() const override { return PlayerInventoryComponent; }
 
-#pragma endregion InteractHUDInterface
+private:
+	/** Updates inventory menu */
+	void UpdateInventoryHUD(UInventoryComponent* InventoryComponent);
+
+	/** Updates PlayerInventoryWindow and NPCInventoryWindow */
+	void UpdateInventoryHUD(UInventoryComponent* PlayerComp, UInventoryComponent* NPCComp);
+
+#pragma endregion InventoryHUDInterface
 			
 
 protected:

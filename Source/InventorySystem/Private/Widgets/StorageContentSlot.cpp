@@ -7,7 +7,7 @@
 #include "Components/TextBlock.h"
 #include "Items/BaseItem.h"
 #include "Components/Button.h"
-#include "Interfaces/InteractHUDInterface.h"
+#include "Interfaces/InventoryHUDInterface.h"
 
 // Logging
 #include "InventorySystem.h"
@@ -31,7 +31,7 @@ void UStorageContentSlot::OnButtonClicked()
 	ACharacter* PlayerCharacter = Cast<ACharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
 	if (PlayerCharacter)
 	{
-		IInteractHUDInterface* Interface = Cast<IInteractHUDInterface>(PlayerCharacter);
+		IInventoryHUDInterface* Interface = Cast<IInventoryHUDInterface>(PlayerCharacter);
 		if (Interface)
 		{
 			if (Interface->ProcessItem(SlotItem))

@@ -10,7 +10,14 @@
 
 
 
-
+/**
+ * Actor Component that handles all operations related to the player's inventory.
+ * 
+ * Operations include:
+ *		Adding/removing an item to/from the inventory
+ *		Equipping/unequipping an item (only applicable for armour sets and weapons)
+ *		Transferring items between actors that possess inventory components
+ */
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class INVENTORYSYSTEM_API UInventoryComponent : public UActorComponent
 {
@@ -46,11 +53,6 @@ private:
 public:	
 	/** Default Constructor */
 	UInventoryComponent();
-
-	/**
-	 * Updates the slots in the inventory HUD
-	 */
-	void UpdateInventoryHUD();
 
 	/**
 	 * Finds an available slot in the inventory to host an item

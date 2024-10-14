@@ -5,7 +5,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/Character.h"
 #include "Widgets/InventorySlot.h"
-#include "Interfaces/InteractHUDInterface.h"
+#include "Interfaces/InventoryHUDInterface.h"
 #include "Components/WrapBox.h"
 #include "Inventory/InventoryComponent.h"
 #include "Widgets/PlayerInventoryWindow.h"
@@ -42,7 +42,7 @@ void UPrimaryHUDWidget::ShowNPCInventory(bool bShowInventory)
 		ACharacter* Character = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
 		if (Character)
 		{
-			IInteractHUDInterface* Interface = Cast<IInteractHUDInterface>(Character);
+			IInventoryHUDInterface* Interface = Cast<IInventoryHUDInterface>(Character);
 			if (Interface)
 			{
 				Interface->UpdateNPCComponentPtr(nullptr);
@@ -112,34 +112,36 @@ void UPrimaryHUDWidget::UpdateInventory(const UInventoryComponent* PlayerComp, c
 	}
 }
 
-void UPrimaryHUDWidget::ClosePlayerInventory()
+void UPrimaryHUDWidget::CloseInventory()
 {
-    APlayerController* PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
-	if (PlayerController)
+	// Don't do anything, if the widget is collapsed
+	if (InventoryMenu->GetVisibility() == ESlateVisibility::Visible)
 	{
-		PlayerController->bShowMouseCursor = false;
+		APlayerController* PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
+		if (PlayerController)
+		{
+			PlayerController->bShowMouseCursor = false;
 
-		FInputModeGameOnly InputMode;
-		PlayerController->SetInputMode(InputMode);
+			FInputModeGameOnly InputMode;
+			PlayerController->SetInputMode(InputMode);
+		}
+
+		ShowPlayerInventory(false);
 	}
 
-	ShowPlayerInventory(false);
-
-}
-
-void UPrimaryHUDWidget::CloseNPCInventory()
-{
-	APlayerController* PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
-	if (PlayerController)
+	if (NPCInventory->GetVisibility() == ESlateVisibility::Visible)
 	{
-		PlayerController->bShowMouseCursor = false;
+		APlayerController* PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
+		if (PlayerController)
+		{
+			PlayerController->bShowMouseCursor = false;
 
-		FInputModeGameOnly InputMode;
-		PlayerController->SetInputMode(InputMode);
+			FInputModeGameOnly InputMode;
+			PlayerController->SetInputMode(InputMode);
+		}
+
+		ShowNPCInventory(false);
 	}
-
-	ShowNPCInventory(false);
-
 }
 
 FReply UPrimaryHUDWidget::NativeOnKeyDown(const FGeometry& InGeometry, const FKeyEvent& InKeyEvent)
@@ -147,8 +149,7 @@ FReply UPrimaryHUDWidget::NativeOnKeyDown(const FGeometry& InGeometry, const FKe
 	FName Key = InKeyEvent.GetKey().GetFName();
 	if (Key == "Tab" || Key == "Escape")
     {
-		ClosePlayerInventory();
-		CloseNPCInventory();
+		CloseInventory();
     }
 	
 	else if (Key == "D" || Key == "E")
@@ -166,7 +167,7 @@ void UPrimaryHUDWidget::ExecuteKeyBinding(FName Key)
 	ACharacter* PlayerCharacter = Cast<ACharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
 	if (PlayerCharacter)
 	{
-		IInteractHUDInterface* Interface = Cast<IInteractHUDInterface>(PlayerCharacter);
+		IInventoryHUDInterface* Interface = Cast<IInventoryHUDInterface>(PlayerCharacter);
 		if (Interface)
 		{
 			if (Key == "D")

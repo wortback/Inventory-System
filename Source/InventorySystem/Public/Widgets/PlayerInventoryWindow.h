@@ -13,8 +13,9 @@ class UWrapBox;
 class UTextBlock;
 class UTabButtonWidget;
 class UInventorySlot;
+
 /**
- * 
+ * Basic inventory widget with a tab switch and wrap box that contains inventory slots
  */
 UCLASS()
 class INVENTORYSYSTEM_API UPlayerInventoryWindow : public UUserWidget

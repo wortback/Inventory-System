@@ -15,7 +15,7 @@ class UBaseButton;
 class UInventoryWidget;
 
 /**
- * 
+ * Tab widget that switches between the inventory tabs on LMB pressed
  */
 UCLASS()
 class INVENTORYSYSTEM_API UTabButtonWidget : public UUserWidget

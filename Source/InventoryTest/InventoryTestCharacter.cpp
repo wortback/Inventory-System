@@ -214,7 +214,7 @@ void AInventoryTestCharacter::OpenInventory(const FInputActionValue& Value)
 	OpenPlayerInventory();
 }
 
-#pragma region InteractHUDInterfaceImplementation
+#pragma region InventoryHUDInterfaceImplementation
 AActor* AInventoryTestCharacter::LookAt()
 {
 	// Trace a BaseItem
@@ -371,4 +371,4 @@ void AInventoryTestCharacter::UpdateNPCComponentPtr(UInventoryComponent* Invento
 	NPCInventoryComp = InventoryComp;
 }
 
-#pragma endregion InteractHUDInterfaceImplementation
+#pragma endregion InventoryHUDInterfaceImplementation

@@ -14,7 +14,7 @@ class UInventoryComponent;
 class UInventorySlot;
 class UPlayerInventoryWindow;
 /**
- * 
+ * Widget class that displays the player's inventory and inventories in the trade mode.
  */
 UCLASS()
 class INVENTORYSYSTEM_API UPrimaryHUDWidget : public UUserWidget, public IInventoryWidgetsInterface
@@ -26,10 +26,11 @@ public:
 	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
 	TObjectPtr<UInventoryWidget> InventoryMenu;
 
-	/** Item exchange with NPC */
+	/** Item exchange with NPC (trade mode) */
 	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
 	TObjectPtr<UPlayerInventoryWindow> PlayerInventory;
 
+	/** Item exchange with NPC (trade mode) */
 	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
 	TObjectPtr<UPlayerInventoryWindow> NPCInventory;
 
@@ -46,23 +47,25 @@ public:
 
 	void ShowNPCInventory(bool bShowInventory);
 
+	/** Update the inventory menu */
 	void UpdateInventory(const UInventoryComponent* InventoryComponent);
 
+	/** Update inventories in the trade mode */
 	void UpdateInventory(const UInventoryComponent* PlayerComp, const UInventoryComponent* NPCComp);
-
-	void ClosePlayerInventory();
-
-	void CloseNPCInventory();
-
-	FReply NativeOnKeyDown(const FGeometry& InGeometry, const FKeyEvent& InKeyEvent) override;
-
-	void ExecuteKeyBinding(FName Key);
-
-	void NativeOnFocusLost(const FFocusEvent& InFocusEvent) override;
 
 	/**
 	 * Updates OverSlot to the passed slot. 
 	 */
 	UFUNCTION()
 	virtual void UpdateSlotUnderCursor(UInventorySlot* SlotUnderCursor) override;
+
+private:
+	/** Collapses all inventories (player's and inventories in the trade mode (i.e. the player's and npc's)) */
+	void CloseInventory();
+
+	FReply NativeOnKeyDown(const FGeometry& InGeometry, const FKeyEvent& InKeyEvent) override;
+
+	void ExecuteKeyBinding(FName Key);
+
+	void NativeOnFocusLost(const FFocusEvent& InFocusEvent) override;
 };

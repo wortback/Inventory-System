@@ -3,21 +3,21 @@
 
 #include "CoreMinimal.h"
 #include "UObject/Interface.h"
-#include "InteractHUDInterface.generated.h"
+#include "InventoryHUDInterface.generated.h"
 
 
 class AActor;
 class UInventoryComponent;
 struct F_InventoryItem;
 
-
+/** Interface for a playable character that possesses an inventory component */
 UINTERFACE(MinimalAPI)
-class UInteractHUDInterface : public UInterface
+class UInventoryHUDInterface : public UInterface
 {
 	GENERATED_BODY()
 };
 
-class INVENTORYSYSTEM_API IInteractHUDInterface
+class INVENTORYSYSTEM_API IInventoryHUDInterface
 {
 	GENERATED_BODY()
 	
@@ -32,10 +32,6 @@ public:
 	virtual void OpenNPCInventory(UInventoryComponent* NPCInventoryComponent) = 0;
 
 	virtual void UpdateInventoryHUD() = 0;
-
-	virtual void UpdateInventoryHUD(UInventoryComponent* InventoryComponent) = 0;
-
-	virtual void UpdateInventoryHUD(UInventoryComponent* PlayerComp, UInventoryComponent* NPCComp) = 0;
 
 	virtual void RemoveItem(F_InventoryItem* Item) = 0;
 

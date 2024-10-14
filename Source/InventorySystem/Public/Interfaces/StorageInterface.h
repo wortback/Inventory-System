@@ -20,11 +20,12 @@ class INVENTORYSYSTEM_API IStorageInterface
 
 
 public:
-	virtual void IntialiseStorage() = 0;
-
-	virtual void GenerateRandomItems() = 0;
-
 	virtual void DisplayContent() = 0;
 
 	virtual void HideContent() = 0;
+
+private:
+	virtual void IntialiseStorage() = 0;
+
+	virtual void GenerateRandomItems() = 0;
 };

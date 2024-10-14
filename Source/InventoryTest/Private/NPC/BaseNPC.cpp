@@ -3,7 +3,7 @@
 
 #include "NPC/BaseNPC.h"
 #include "Kismet/GameplayStatics.h"
-#include "Interfaces/InteractHUDInterface.h"
+#include "Interfaces/InventoryHUDInterface.h"
 #include "Inventory/InventoryComponent.h"
 
 // Sets default values
@@ -21,7 +21,7 @@ bool ABaseNPC::Interact(UInventoryComponent* Inventory)
 	ACharacter* Character = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
 	if (Character)
 	{
-		IInteractHUDInterface* Interface = Cast<IInteractHUDInterface>(Character);
+		IInventoryHUDInterface* Interface = Cast<IInventoryHUDInterface>(Character);
 		if (Interface)
 		{
 			Interface->OpenNPCInventory(NPCInventoryComponent);
