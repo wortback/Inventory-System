@@ -6,6 +6,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/Character.h"
 #include "System/CommonTypes.h"
+#include "System/Defines.h"
 
 // Logging
 #include "InventorySystem.h"
@@ -21,7 +22,7 @@ UInventoryComponent::UInventoryComponent()
 	PrimaryComponentTick.bCanEverTick = false;
 }
 
-bool UInventoryComponent::ProcessItem(F_InventoryItem* Item)
+bool UInventoryComponent::ProcessItem(F_InventoryItem* Item, int32 Quantity /* = 1*/)
 {
 	if (Item->ItemType != EItemType::EIT_None)
 	{
@@ -30,10 +31,10 @@ bool UInventoryComponent::ProcessItem(F_InventoryItem* Item)
 
 		if (ItemIndexLocation >= 0)
 		{
-			F_InventoryItem* AddedItem = AddItem(Item, ItemIndexLocation);
+			F_InventoryItem* AddedItem = AddItem(Item, ItemIndexLocation, Quantity);
 			if (AddedItem->Quantity > 0)
 			{
-				ProcessItem(AddedItem);
+				ProcessItem(AddedItem, AddedItem->Quantity);
 			}
 			else
 			{
@@ -51,7 +52,7 @@ bool UInventoryComponent::ProcessItem(F_InventoryItem* Item)
 	return false;
 }
 
-F_InventoryItem* UInventoryComponent::AddItem(F_InventoryItem* Item, int IndexLocation)
+F_InventoryItem* UInventoryComponent::AddItem(F_InventoryItem* Item, int IndexLocation, int32 Quantity /*= 1*/)
 {
 	UE_LOG(LogInventoryComponent, Log, TEXT("Adding a new item of type %s"), *(EItemTypeToString(Item->ItemType)));
 
@@ -60,7 +61,7 @@ F_InventoryItem* UInventoryComponent::AddItem(F_InventoryItem* Item, int IndexLo
 
 	UBaseItem* DefaultItem = Cast<UBaseItem>(UBaseItem::StaticClass()->GetDefaultObject(true));
 	
-	int32 NewQuantity = ItemAtLocation->Quantity + Item->Quantity;
+	int32 NewQuantity = ItemAtLocation->Quantity + Quantity;
 	int32 QuantityClamped = FMath::Clamp(NewQuantity, 0, DefaultItem->StackSize);
 	int32 DeltaQuantity = NewQuantity - FMath::Clamp(NewQuantity, 0, DefaultItem->StackSize);
 
@@ -79,15 +80,26 @@ F_InventoryItem* UInventoryComponent::AddItem(F_InventoryItem* Item, int IndexLo
 	return Result;
 }
 
-bool UInventoryComponent::RemoveItem(F_InventoryItem* Item)
+bool UInventoryComponent::RemoveItem(F_InventoryItem* Item, int32 Quantity)
 {
 	if (Item->ItemType != EItemType::EIT_None)
 	{
 		F_InventoryItem* ItemAtLocation = &SetItemsForItemType(Item->ItemType)[Item->IndexLocation];
-		ItemAtLocation->ItemClass = UBaseItem::StaticClass();
-		ItemAtLocation->OwningInventory = nullptr;
-		ItemAtLocation->Quantity = 0;
-		ItemAtLocation->ItemType = EItemType::EIT_None;
+		if (ItemAtLocation->Quantity == 1)
+		{
+			ItemAtLocation->ItemClass = UBaseItem::StaticClass();
+			ItemAtLocation->OwningInventory = nullptr;
+			ItemAtLocation->Quantity = 0;
+			ItemAtLocation->ItemType = EItemType::EIT_None;
+		}
+		else if (ItemAtLocation->Quantity > Quantity)
+		{
+			ItemAtLocation->Quantity -= Quantity;
+		}
+		else
+		{
+			UE_LOG(LogInventoryComponent, Error, TEXT("Attempting to remove more item instances than are present. Aborting the operation."));
+		}
 
 		return true;
 	}
@@ -115,6 +127,45 @@ bool UInventoryComponent::EquipItem(F_InventoryItem* Item)
 		UE_LOG(LogInventoryComponent, Warning, TEXT("This item cannot be equiped."));
 		return false;
 	}
+}
+
+bool UInventoryComponent::UnequipItem(F_InventoryItem* Item)
+{
+	UE_LOG(LogInventoryComponent, Log, TEXT("Unequipping the item..."));
+	if (ProcessItem(Item, Item->Quantity))
+	{
+		if (Item->ItemType == EItemType::EIT_Armour)
+		{
+			EquippedArmour.ClearItem();
+		}
+		else if (Item->ItemType == EItemType::EIT_Weapon)
+		{
+			EquippedWeapon.ClearItem();
+		}
+	}
+	return false;
+}
+
+bool UInventoryComponent::TransferItem(F_InventoryItem* Item, UInventoryComponent* Receiver, int32 Quantity /*= 1*/)
+{
+	if (Receiver->ProcessItem(Item, Quantity))
+	{
+		RemoveItem(Item, Quantity);
+		return true;
+	}
+	UE_LOG(LogInventoryComponent, Error, TEXT("The item cannot be transferred."));
+	return false;
+}
+
+bool UInventoryComponent::ReceiveItem(F_InventoryItem* Item, UInventoryComponent* Sender, int32 Quantity /*= 1*/)
+{
+	if (ProcessItem(Item, Quantity))
+	{
+		Sender->RemoveItem(Item, Quantity);
+		return true;
+	}
+	UE_LOG(LogInventoryComponent, Error, TEXT("The item cannot be received."));
+	return false;
 }
 
 void UInventoryComponent::SwapEquipped(F_InventoryItem& Item, F_InventoryItem& EquippedItem)
@@ -159,15 +210,18 @@ int UInventoryComponent::FindAvailableLocation(F_InventoryItem* Item)
 	UE_LOG(LogInventoryComponent, Log, TEXT("Searching for an available location..."));
 
 	// Case 1: There's another Item of the same class present in the inventory and it's quantity is less than the stack size
-	for (const F_InventoryItem& Element : GetItemsForItemType(Item->ItemType))
+	UBaseItem* DefaultItem = Cast<UBaseItem>(Item->ItemClass->GetDefaultObject(true));
+	if (DefaultItem->bIsStackable)
 	{
-		if (Element.ItemClass == Item->ItemClass)
+		for (const F_InventoryItem& Element : GetItemsForItemType(Item->ItemType))
 		{
-			UBaseItem* DefaultItem = Cast<UBaseItem>(UBaseItem::StaticClass()->GetDefaultObject(true));
-			if (Element.Quantity < DefaultItem->StackSize)
+			if (Element.ItemClass == Item->ItemClass)
 			{
-				UE_LOG(LogInventoryComponent, Log, TEXT("Found an item of the same class at location %d"), Element.IndexLocation);
-				return Element.IndexLocation;
+				if (Element.Quantity < DefaultItem->StackSize)
+				{
+					UE_LOG(LogInventoryComponent, Log, TEXT("Found an item of the same class at location %d"), Element.IndexLocation);
+					return Element.IndexLocation;
+				}
 			}
 		}
 	}

@@ -33,6 +33,12 @@ void UInventorySlot::UpdateSlotContent()
 			AmountText->SetText(FText::FromString(FString::FromInt(Item.Quantity)));
 		}
 	}
+	else
+	{
+		Thumbnail->SetColorAndOpacity(FLinearColor::Transparent);
+		ItemName->SetText(FText::GetEmpty());
+		AmountText->SetText(FText::GetEmpty());
+	}
 }
 
 void UInventorySlot::NativeConstruct()

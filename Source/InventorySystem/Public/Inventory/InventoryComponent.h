@@ -61,7 +61,7 @@ public:
 	 * @return true if the item was successfully added
 	 * @return false if the item could not be added
 	 */
-	bool ProcessItem(F_InventoryItem* Item);
+	bool ProcessItem(F_InventoryItem* Item, int32 Quantity);
 
 	/**
 	 * Removes Item from the inventory
@@ -69,7 +69,7 @@ public:
 	 * @param Item The item to be removed
 	 * @return true if the removal was successful
 	 */
-	bool RemoveItem(F_InventoryItem* Item);
+	bool RemoveItem(F_InventoryItem* Item, int32 Quantity);
 
 	/**
 	 * Moves the Item from the inventory array to the equipped slot
@@ -79,6 +79,33 @@ public:
 	 * @return true if the removal was successful
 	 */
 	bool EquipItem(F_InventoryItem* Item);
+
+	/**
+	 * Moves the Item from the equipped slot to the inventory
+	 * Only applicable to weapons and armour sets
+	 *
+	 * @param Item The item to be unequipped
+	 * @return true if the removal was successful
+	 */
+	bool UnequipItem(F_InventoryItem* Item);
+
+	/**
+	 * Moves the Item from this inventory to another one
+	 *
+	 * @param Item The item to be transferred
+	 * @param Receiver The InvenotryComponent that receives the item
+	 * @return true if the transfer was successful
+	 */
+	bool TransferItem(F_InventoryItem* Item, UInventoryComponent* Receiver, int32 Quantity = 1);
+
+	/**
+	 * Moves the Item from the sender inventory to this inventory
+	 *
+	 * @param Item The item to be received
+	 * @param Sender The InvenotryComponent that transfers the item
+	 * @return true if the transfer was successful
+	 */
+	bool ReceiveItem(F_InventoryItem* Item, UInventoryComponent* Sender, int32 Quantity = 1);
 
 	/**
 	 * Depending on ItemType returns the TArray the item can be assigned to
@@ -110,7 +137,7 @@ private:
 	 * @param Item The item to be added
 	 * @param IndexLocation The index of the position in the inventory where the item is to be hosted
 	 */
-	F_InventoryItem* AddItem(F_InventoryItem* Item, int IndexLocation);
+	F_InventoryItem* AddItem(F_InventoryItem* Item, int IndexLocation, int32 Quantity);
 
 	void SwapEquipped(F_InventoryItem& Item, F_InventoryItem& EquippedItem);
 

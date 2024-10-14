@@ -9,6 +9,7 @@
 #include "Components/WrapBox.h"
 #include "Inventory/InventoryComponent.h"
 #include "Widgets/PlayerInventoryWindow.h"
+#include "System/Defines.h"
 
 // Logging
 #include "InventorySystem.h"
@@ -172,11 +173,19 @@ void UPrimaryHUDWidget::ExecuteKeyBinding(FName Key)
 		{
 			if (Key == "D")
 			{
-				Interface->RemoveItem(&(OverSlot->Item));
+				Interface->RemoveItem(&(OverSlot->Item), 1);
 			}
 			else if (Key == "E")
 			{
-				Interface->EquipItem(&(OverSlot->Item));
+				if (OverSlot->Item.IndexLocation == EQ_ARMOUR_INDEX_LOCATION || OverSlot->Item.IndexLocation == EQ_WEAPON_INDEX_LOCATION)
+				{
+					Interface->UnequipItem(&(OverSlot->Item));
+				}
+				else
+				{
+					Interface->EquipItem(&(OverSlot->Item));
+				}
+				
 				if (OverSlot->Item.OwningInventory == Interface->GetInventoryComponent())
 				{
 					Interface->SellItem(&(OverSlot->Item));

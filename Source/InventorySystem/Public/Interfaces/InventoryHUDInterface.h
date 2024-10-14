@@ -33,11 +33,13 @@ public:
 
 	virtual void UpdateInventoryHUD() = 0;
 
-	virtual void RemoveItem(F_InventoryItem* Item) = 0;
+	virtual void RemoveItem(F_InventoryItem* Item, int32 Quantity) = 0;
 
-	virtual bool ProcessItem(F_InventoryItem* Item) = 0;
+	virtual bool ProcessItem(F_InventoryItem* Item, int32 Quantity) = 0;
 
 	virtual bool EquipItem(F_InventoryItem* Item) = 0;
+
+	virtual bool UnequipItem(F_InventoryItem* Item) = 0;
 
 	virtual bool SellItem(F_InventoryItem* Item) = 0;
 

@@ -103,11 +103,13 @@ protected:
 	* or the inventory menu */
 	virtual void UpdateInventoryHUD() override;
 
-	virtual void RemoveItem(F_InventoryItem* Item) override;
+	virtual void RemoveItem(F_InventoryItem* Item, int32 Quantity) override;
 
-	virtual bool ProcessItem(F_InventoryItem* Item) override;
+	virtual bool ProcessItem(F_InventoryItem* Item, int32 Quantity) override;
 
 	virtual bool EquipItem(F_InventoryItem* Item) override;
+
+	virtual bool UnequipItem(F_InventoryItem* Item) override;
 
 	virtual bool SellItem(F_InventoryItem* Item) override;
 

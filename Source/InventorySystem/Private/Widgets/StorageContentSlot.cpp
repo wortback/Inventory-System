@@ -13,6 +13,7 @@
 #include "InventorySystem.h"
 
 
+//TODO display the amount of instances of the item in the slot
 void UStorageContentSlot::NativeConstruct()
 {
 	UseButton->OnPressed.AddDynamic(this, &UStorageContentSlot::OnButtonClicked);
@@ -34,7 +35,8 @@ void UStorageContentSlot::OnButtonClicked()
 		IInventoryHUDInterface* Interface = Cast<IInventoryHUDInterface>(PlayerCharacter);
 		if (Interface)
 		{
-			if (Interface->ProcessItem(SlotItem))
+			// TODO allow to take a desired amount of items from one slot
+			if (Interface->ProcessItem(SlotItem, SlotItem->Quantity))
 			{
 				SlotItem->ClearItem();
 				UE_LOG(LogInventoryHUD, Log, TEXT("Successfully collected the item from the storage."));
