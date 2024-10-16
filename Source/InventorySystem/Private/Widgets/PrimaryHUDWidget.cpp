@@ -68,18 +68,32 @@ void UPrimaryHUDWidget::UpdateInventory(const UInventoryComponent* InventoryComp
 			InventoryMenu->PlayerInventoryWindow->InventoryBox->AddChildToWrapBox(ChildSlot);
 		}
 
-		InventoryMenu->EquippedArmour->Item = InventoryComponent->GetEquippedArmour();
-		InventoryMenu->EquippedArmour->OwningHUD = this;
-		InventoryMenu->EquippedArmour->UpdateSlotContent();
+		//InventoryMenu->QuickSlot1, InventoryMenu->QuickSlot2, InventoryMenu->QuickSlot3, InventoryMenu->QuickSlot4
+		TArray<TObjectPtr<UInventorySlot>> EquippedSlots = { InventoryMenu->EquippedArmour, InventoryMenu->EquippedWeapon };
+		TArray<TObjectPtr<UInventorySlot>> QASlots = { InventoryMenu->QuickSlot1, InventoryMenu->QuickSlot2, 
+													   InventoryMenu->QuickSlot3, InventoryMenu->QuickSlot4 };
+		TArray<const F_InventoryItem*> EquippedItems = { &InventoryComponent->GetEquippedArmour(), &InventoryComponent->GetEquippedWeapon() };
+		for (int32 i = 0; i < EquippedSlots.Num(); ++i)
+		{
+			UpdateEquippedAndQASlots(EquippedSlots[i], EquippedItems[i]);
+		}
+		for (int32 i = 0; i < EquippedSlots.Num(); ++i)
+		{
+			UpdateEquippedAndQASlots(QASlots[i], &InventoryComponent->GetQuickAccessItem(i+1));
+		}
 
-		InventoryMenu->EquippedWeapon->Item = InventoryComponent->GetEquippedWeapon();
-		InventoryMenu->EquippedWeapon->OwningHUD = this;
-		InventoryMenu->EquippedWeapon->UpdateSlotContent();
 	}
 	else
 	{
 		UE_LOG(LogInventoryHUD, Warning, TEXT("Cannot update the inventory. InventoryComponent is NULL or InventorySlotClass is not set in PrimaryHUD."));
 	}
+}
+
+void UPrimaryHUDWidget::UpdateEquippedAndQASlots(TObjectPtr<UInventorySlot> InventorySlot, const F_InventoryItem* Item)
+{
+	InventorySlot->Item = *Item;
+	InventorySlot->OwningHUD = this;
+	InventorySlot->UpdateSlotContent();
 }
 
 void UPrimaryHUDWidget::UpdateInventory(const UInventoryComponent* PlayerComp, const UInventoryComponent* NPCComp)
@@ -189,7 +203,7 @@ void UPrimaryHUDWidget::ExecuteEKey(IInventoryHUDInterface* Interface)
 	// If the character is not trading:
 	if (!Interface->GetIsInTradeMode())
 	{
-		if (OverSlot->Item.IndexLocation == EQ_ARMOUR_INDEX_LOCATION || OverSlot->Item.IndexLocation == EQ_WEAPON_INDEX_LOCATION)
+		if (InventoryMenu->IsSpecialSlotIndex(OverSlot->Item.IndexLocation))
 		{
 			Interface->UnequipItem(&(OverSlot->Item));
 		}
@@ -254,7 +268,7 @@ void UPrimaryHUDWidget::HandleSliderValueConfirmed(int32 SliderValue)
 		}
 	}
 
-	// Set focus on the primary HUD again
+	// Set focus on the primary HUD again (TODO: It's not working)
 	SetFocus();
 }
 

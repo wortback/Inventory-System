@@ -37,6 +37,24 @@ public:
 	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
 	TObjectPtr<UInventorySlot> EquippedWeapon;
 
+	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
+	TObjectPtr<UInventorySlot> QuickSlot1;
+
+	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
+	TObjectPtr<UInventorySlot> QuickSlot2;
+
+	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
+	TObjectPtr<UInventorySlot> QuickSlot3;
+
+	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
+	TObjectPtr<UInventorySlot> QuickSlot4;
+
+
+
 public:
+	/** Update PlayerInventoryWindow */
 	void UpdateMenu();
+
+	/** Returns true if the index matches either equipped slot index or QA slot index */
+	bool IsSpecialSlotIndex(int32 Index);
 };

@@ -41,11 +41,11 @@ public:
 	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
 	TObjectPtr<UPlayerInventoryWindow> NPCInventory;
 
-	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Subwidgets")
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Subwidget Classes")
 	TSubclassOf<UInventorySlot> InventorySlotClass;
 
 	/** The class of the widget used to set the desired amount of copies of an item to be transferred */
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Subwidget Classes")
 	TSubclassOf<UTransferItemsWidget> TransferItemsWidgetClass;
 
 	/** The widget that sets the desired amount of copies of the selected item to be transferred */
@@ -73,17 +73,22 @@ public:
 	virtual void UpdateSlotUnderCursor(UInventorySlot* SlotUnderCursor) override;
 
 private:
+	virtual FReply NativeOnKeyDown(const FGeometry& InGeometry, const FKeyEvent& InKeyEvent) override;
+
+	virtual void NativeOnFocusLost(const FFocusEvent& InFocusEvent) override;
+
 	/** Collapses all inventories (player's and inventories in the trade mode (i.e. the player's and npc's)) */
 	void CloseInventory();
-
-	FReply NativeOnKeyDown(const FGeometry& InGeometry, const FKeyEvent& InKeyEvent) override;
 
 	void ExecuteKeyBinding(FName Key);
 
 	void ExecuteEKey(IInventoryHUDInterface* Interface);
 
+	void UpdateEquippedAndQASlots(TObjectPtr<UInventorySlot> InventorySlot, const F_InventoryItem* Item);
+
+	/** For OnSliderValueConfirmed Event */
 	UFUNCTION()
 	void HandleSliderValueConfirmed(int32 SliderValue);
 
-	void NativeOnFocusLost(const FFocusEvent& InFocusEvent) override;
+	
 };

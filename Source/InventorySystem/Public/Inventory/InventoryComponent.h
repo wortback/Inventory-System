@@ -44,11 +44,23 @@ private:
 
 	int32 MiscellaneousItemsCapacity = 30;
 
-	/** Separate slot for the equipped armour set */
+	/** Inventory item reserved for the equipped armour */
 	F_InventoryItem EquippedArmour;
 
-	/** Separate slot for the equipped weapon */
+	/** Inventory item reserved for the equipped weapon */
 	F_InventoryItem EquippedWeapon;
+
+	/** Inventory item reserved for quick access, such as a hotkey or shortcut slot */
+	F_InventoryItem QuickAccessItem1;
+
+	/** Inventory item reserved for quick access, such as a hotkey or shortcut slot */
+	F_InventoryItem QuickAccessItem2;
+
+	/** Inventory item reserved for quick access, such as a hotkey or shortcut slot */
+	F_InventoryItem QuickAccessItem3;
+
+	/** Inventory item reserved for quick access, such as a hotkey or shortcut slot */
+	F_InventoryItem QuickAccessItem4;
 
 public:	
 	/** Default Constructor */
@@ -123,6 +135,11 @@ protected:
 
 private:
 	void InitialiseInventory();
+
+	void InitialiseItemArray(TArray<F_InventoryItem>& ItemArr, int32 Capacity);
+
+	void InitialiseEquippedItem(F_InventoryItem& Item, int32 IndexLocation);
+
 	/**
 	 * Once an item is added to the inventory, find an available slot to host the item
 	 *
@@ -157,5 +174,7 @@ public:
 
 	FORCEINLINE const F_InventoryItem& GetEquippedArmour() const { return EquippedArmour; }
 	FORCEINLINE const F_InventoryItem& GetEquippedWeapon() const { return EquippedWeapon; }
+
+	const F_InventoryItem& GetQuickAccessItem(int32 QAIndex) const;
 		
 };

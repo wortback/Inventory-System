@@ -11,6 +11,7 @@
 class UInventoryComponent;
 
 
+constexpr int32 DEFAULT_INDEX_LOCATION = -1;
 
 /**
  * @struct F_InventoryItem

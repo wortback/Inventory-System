@@ -143,7 +143,10 @@ bool UInventoryComponent::EquipItem(F_InventoryItem* Item)
 		UE_LOG(LogInventoryComponent, Log, TEXT("Equipping the weapon..."));
 		SwapEquipped(*Item, EquippedWeapon);
 		return true;
-
+	case EItemType::EIT_Consumable:
+		UE_LOG(LogInventoryComponent, Log, TEXT("Equipping the consumable..."));
+		SwapEquipped(*Item, QuickAccessItem1);
+		return true;
 	case EItemType::EIT_None:
 	case EItemType::EIT_Miscellaneous:
 	case EItemType::EIT_Quest:
@@ -165,6 +168,10 @@ bool UInventoryComponent::UnequipItem(F_InventoryItem* Item)
 		else if (Item->ItemType == EItemType::EIT_Weapon)
 		{
 			EquippedWeapon.ClearItem();
+		}
+		else if (Item->ItemType == EItemType::EIT_Consumable)
+		{
+			QuickAccessItem1.ClearItem();
 		}
 	}
 	return false;
@@ -292,58 +299,46 @@ TArray<F_InventoryItem>& UInventoryComponent::SetItemsForItemType(EItemType Item
 void UInventoryComponent::InitialiseInventory()
 {
 	// Initialise all arrays
-	Equipment.SetNum(EquipmentCapacity);
-	for (int i = 0; i <= EquipmentCapacity - 1; ++i)
+	TArray<TArray<F_InventoryItem>*> ItemArrays = { &Equipment, &QuestItems, &Consumables, &MiscellaneousItems };
+	TArray<int32> Capacities = { EquipmentCapacity, QuestItemsCapacity, ConsumablesCapacity, MiscellaneousItemsCapacity };
+	for (int32 i = 0; i < ItemArrays.Num(); ++i)
 	{
-		Equipment[i].ItemClass = UBaseItem::StaticClass();
-		Equipment[i].Quantity = 0;
-		Equipment[i].OwningInventory = this;
-		Equipment[i].IndexLocation = i;
-		Equipment[i].ItemType = EItemType::EIT_None;
+		InitialiseItemArray(*ItemArrays[i], Capacities[i]);
 	}
 
-	QuestItems.SetNum(QuestItemsCapacity);
-	for (int i = 0; i <= QuestItemsCapacity - 1; ++i)
+	// Initialise Equipped Items (special items)
+	TArray<F_InventoryItem*> EquippedItems = { &EquippedArmour, &EquippedWeapon,
+		&QuickAccessItem1, &QuickAccessItem2, &QuickAccessItem3, &QuickAccessItem4 };
+	TArray<int32> SpecialIndexLocations = { EQ_ARMOUR_INDEX_LOCATION, EQ_WEAPON_INDEX_LOCATION, QUICK_SLOT_1_INDEX_LOCATION,
+											QUICK_SLOT_2_INDEX_LOCATION, QUICK_SLOT_3_INDEX_LOCATION, QUICK_SLOT_4_INDEX_LOCATION };
+
+	for (int32 i = 0; i < EquippedItems.Num(); ++i)
 	{
-		QuestItems[i].ItemClass = UBaseItem::StaticClass();
-		QuestItems[i].Quantity = 0;
-		QuestItems[i].OwningInventory = this;
-		QuestItems[i].IndexLocation = i;
-		QuestItems[i].ItemType = EItemType::EIT_None;
+		InitialiseEquippedItem(*EquippedItems[i], SpecialIndexLocations[i]);
 	}
 
-	Consumables.SetNum(ConsumablesCapacity);
-	for (int i = 0; i <= ConsumablesCapacity - 1; ++i)
+}
+
+void UInventoryComponent::InitialiseItemArray(TArray<F_InventoryItem>& ItemArr, int32 Capacity)
+{
+	ItemArr.SetNum(Capacity);
+	for (int32 i = 0; i < Capacity; ++i)
 	{
-		Consumables[i].ItemClass = UBaseItem::StaticClass();
-		Consumables[i].Quantity = 0;
-		Consumables[i].OwningInventory = this;
-		Consumables[i].IndexLocation = i;
-		Consumables[i].ItemType = EItemType::EIT_None;
+		ItemArr[i].ItemClass = UBaseItem::StaticClass();
+		ItemArr[i].Quantity = 0;
+		ItemArr[i].OwningInventory = this;
+		ItemArr[i].IndexLocation = i;
+		ItemArr[i].ItemType = EItemType::EIT_None;
 	}
+}
 
-	MiscellaneousItems.SetNum(MiscellaneousItemsCapacity);
-	for (int i = 0; i <= MiscellaneousItemsCapacity - 1; ++i)
-	{
-		MiscellaneousItems[i].ItemClass = UBaseItem::StaticClass();
-		MiscellaneousItems[i].Quantity = 0;
-		MiscellaneousItems[i].OwningInventory = this;
-		MiscellaneousItems[i].IndexLocation = i;
-		MiscellaneousItems[i].ItemType = EItemType::EIT_None;
-	}
-
-	// Initialise Equipped slots
-	EquippedArmour.Quantity = 0;
-	EquippedArmour.OwningInventory = this;
-	EquippedArmour.IndexLocation = EQ_ARMOUR_INDEX_LOCATION;
-	EquippedArmour.ItemClass = UBaseItem::StaticClass();
-	EquippedArmour.ItemType = EItemType::EIT_None;
-
-	EquippedWeapon.Quantity = 0;
-	EquippedWeapon.OwningInventory = this;
-	EquippedWeapon.IndexLocation = EQ_WEAPON_INDEX_LOCATION;
-	EquippedWeapon.ItemClass = UBaseItem::StaticClass();
-	EquippedWeapon.ItemType = EItemType::EIT_None;
+void UInventoryComponent::InitialiseEquippedItem(F_InventoryItem& Item, int32 IndexLocation)
+{
+	Item.Quantity = 0;
+	Item.OwningInventory = this;
+	Item.IndexLocation = IndexLocation;
+	Item.ItemClass = UBaseItem::StaticClass();
+	Item.ItemType = EItemType::EIT_None;
 }
 
 // Called when the game starts
@@ -361,4 +356,20 @@ void UInventoryComponent::TickComponent(float DeltaTime, ELevelTick TickType, FA
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
 	// ...
+}
+
+const F_InventoryItem& UInventoryComponent::GetQuickAccessItem(int32 QAIndex) const
+{
+	switch (QAIndex)
+	{
+	default:
+	case 1:
+		return QuickAccessItem1;
+	case 2:
+		return QuickAccessItem2;
+	case 3:
+		return QuickAccessItem3;
+	case 4:
+		return QuickAccessItem4;
+	}
 }
