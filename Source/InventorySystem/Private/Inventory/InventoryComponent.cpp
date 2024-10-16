@@ -34,7 +34,13 @@ bool UInventoryComponent::ProcessItem(F_InventoryItem* Item, int32 Quantity /* =
 			if (ItemIndexLocation >= 0)
 			{
 				F_InventoryItem* AddedItem = AddItem(Item, ItemIndexLocation, Quantity);
-				if (AddedItem->Quantity > 0)
+				if (!AddedItem)
+				{
+					UE_LOG(LogInventoryComponent, Log, TEXT("Failed to process the item since the pointer is invalid."));
+					delete AddedItem;
+					return false;
+				}
+				else if (AddedItem->Quantity > 0)
 				{
 					ProcessItem(AddedItem, AddedItem->Quantity);
 				}
@@ -63,28 +69,33 @@ F_InventoryItem* UInventoryComponent::AddItem(F_InventoryItem* Item, int IndexLo
 	UE_LOG(LogInventoryComponent, Log, TEXT("Adding a new item of type %s"), *(EItemTypeToString(Item->ItemType)));
 	UE_LOG(LogInventoryComponent, Log, TEXT("In quantity %s"), *FString::FromInt(Quantity));
 
-	F_InventoryItem* ItemAtLocation = &SetItemsForItemType(Item->ItemType)[IndexLocation];
+	if (SetItemsForItemType(Item->ItemType).IsValidIndex(IndexLocation))
+	{
+		F_InventoryItem* ItemAtLocation = &SetItemsForItemType(Item->ItemType)[IndexLocation];
 
 
-	UBaseItem* DefaultItem = Cast<UBaseItem>(UBaseItem::StaticClass()->GetDefaultObject(true));
-	
-	int32 NewQuantity = ItemAtLocation->Quantity + Quantity;
-	int32 QuantityClamped = FMath::Clamp(NewQuantity, 0, DefaultItem->StackSize);
-	int32 DeltaQuantity = NewQuantity - FMath::Clamp(NewQuantity, 0, DefaultItem->StackSize);
+		UBaseItem* DefaultItem = Cast<UBaseItem>(UBaseItem::StaticClass()->GetDefaultObject(true));
 
-	// Update member variables on the item st this particular slot
-	ItemAtLocation->Quantity = QuantityClamped;
-	ItemAtLocation->ItemClass = Item->ItemClass;
-	ItemAtLocation->OwningInventory = this;
-	ItemAtLocation->IndexLocation = IndexLocation;
-	ItemAtLocation->ItemType = Item->ItemType;
+		int32 NewQuantity = ItemAtLocation->Quantity + Quantity;
+		int32 QuantityClamped = FMath::Clamp(NewQuantity, 0, DefaultItem->StackSize);
+		int32 DeltaQuantity = NewQuantity - FMath::Clamp(NewQuantity, 0, DefaultItem->StackSize);
 
-	// A new F_InventoryItem Object that stores DeltaQuantity
-	// if it is bigger than 0, will attempt to store the remaining copies of the item in a separate slot
-	F_InventoryItem* Result = new F_InventoryItem(*Item);
-	Result->Quantity = DeltaQuantity;
+		// Update member variables on the item st this particular slot
+		ItemAtLocation->Quantity = QuantityClamped;
+		ItemAtLocation->ItemClass = Item->ItemClass;
+		ItemAtLocation->OwningInventory = this;
+		ItemAtLocation->IndexLocation = IndexLocation;
+		ItemAtLocation->ItemType = Item->ItemType;
 
-	return Result;
+		// A new F_InventoryItem Object that stores DeltaQuantity
+		// if it is bigger than 0, will attempt to store the remaining copies of the item in a separate slot
+		F_InventoryItem* Result = new F_InventoryItem(*Item);
+		Result->Quantity = DeltaQuantity;
+
+		return Result;
+	}
+	UE_LOG(LogInventoryComponent, Error, TEXT("[AddItem] Index location &d is out of bound."), IndexLocation);
+	return nullptr;
 }
 
 bool UInventoryComponent::RemoveItem(F_InventoryItem* Item, int32 Quantity)
@@ -92,24 +103,29 @@ bool UInventoryComponent::RemoveItem(F_InventoryItem* Item, int32 Quantity)
 	UE_LOG(LogInventoryComponent, Log, TEXT("Removing %s items"), *FString::FromInt(Quantity));
 	if (Item->ItemType != EItemType::EIT_None)
 	{
-		F_InventoryItem* ItemAtLocation = &SetItemsForItemType(Item->ItemType)[Item->IndexLocation];
-		if (ItemAtLocation->Quantity == Quantity)
+		if (SetItemsForItemType(Item->ItemType).IsValidIndex(Item->IndexLocation))
 		{
-			ItemAtLocation->ItemClass = UBaseItem::StaticClass();
-			ItemAtLocation->OwningInventory = nullptr;
-			ItemAtLocation->Quantity = 0;
-			ItemAtLocation->ItemType = EItemType::EIT_None;
-		}
-		else if (ItemAtLocation->Quantity > Quantity)
-		{
-			ItemAtLocation->Quantity -= Quantity;
-		}
-		else
-		{
-			UE_LOG(LogInventoryComponent, Error, TEXT("Attempting to remove more item instances than are present. Aborting the operation."));
-		}
+			F_InventoryItem* ItemAtLocation = &SetItemsForItemType(Item->ItemType)[Item->IndexLocation];
+			if (ItemAtLocation->Quantity == Quantity)
+			{
+				ItemAtLocation->ItemClass = UBaseItem::StaticClass();
+				ItemAtLocation->OwningInventory = nullptr;
+				ItemAtLocation->Quantity = 0;
+				ItemAtLocation->ItemType = EItemType::EIT_None;
+			}
+			else if (ItemAtLocation->Quantity > Quantity)
+			{
+				ItemAtLocation->Quantity -= Quantity;
+			}
+			else
+			{
+				UE_LOG(LogInventoryComponent, Error, TEXT("Attempting to remove more item instances than are present. Aborting the operation."));
+				return false;
+			}
 
-		return true;
+			return true;
+		}
+		UE_LOG(LogInventoryComponent, Error, TEXT("[RemoveItem] Index location &d is out of bound."), Item->IndexLocation);
 	}
 	return false;
 }
@@ -178,6 +194,11 @@ bool UInventoryComponent::ReceiveItem(F_InventoryItem* Item, UInventoryComponent
 
 void UInventoryComponent::SwapEquipped(F_InventoryItem& Item, F_InventoryItem& EquippedItem)
 {
+	if (!SetItemsForItemType(Item.ItemType).IsValidIndex(Item.IndexLocation))
+	{
+		UE_LOG(LogInventoryComponent, Error, TEXT("[SwapItem] Index location %d is out of bound."), Item.IndexLocation);
+		return;
+	}
 	F_InventoryItem* ItemAtLocation = &SetItemsForItemType(Item.ItemType)[Item.IndexLocation];
 	F_InventoryItem Temp;
 	Temp.ItemClass = EquippedItem.ItemClass;
