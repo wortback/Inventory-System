@@ -23,7 +23,7 @@ void UInventorySlot::UpdateSlotContent()
 			UE_LOG(LogInventoryHUD, Log, TEXT("Image is not null."));
 		}
 
-		// Since by default the slot image is transparent, we set another colour to remove tranparancy of the image first
+		// Since by default the slot image is transparent, we set another colour to remove transparency of the image first
 		Thumbnail->SetColorAndOpacity(FLinearColor::White);
 		Thumbnail->SetBrushFromTexture(BaseItem->Thumbnail);
 

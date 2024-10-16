@@ -72,6 +72,9 @@ private:
 
 	UInventoryComponent* NPCInventoryComp = nullptr;
 
+	/** True, if the character is exchanging items with an NPC (NPCInventoryComp is not nullptr) */
+	bool bIsTrading;
+
 public:
 	AInventoryTestCharacter();
 	
@@ -103,6 +106,10 @@ protected:
 	* or the inventory menu */
 	virtual void UpdateInventoryHUD() override;
 
+	virtual bool GetIsInTradeMode() const { return bIsTrading; }
+
+	virtual void SetIsInTradeMode(bool bIsInTradeMode) { bIsTrading = bIsInTradeMode; }
+
 	virtual void RemoveItem(F_InventoryItem* Item, int32 Quantity) override;
 
 	virtual bool ProcessItem(F_InventoryItem* Item, int32 Quantity) override;
@@ -111,9 +118,9 @@ protected:
 
 	virtual bool UnequipItem(F_InventoryItem* Item) override;
 
-	virtual bool SellItem(F_InventoryItem* Item) override;
+	virtual bool SellItem(F_InventoryItem* Item, int32 Quantity) override;
 
-	virtual bool BuyItem(F_InventoryItem* Item) override;
+	virtual bool BuyItem(F_InventoryItem* Item, int32 Quantity) override;
 
 	virtual void UpdateNPCComponentPtr(UInventoryComponent* InventoryComp) override;
 

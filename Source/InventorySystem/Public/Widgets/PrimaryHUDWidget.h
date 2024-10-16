@@ -6,6 +6,7 @@
 #include "Blueprint/UserWidget.h"
 #include "Widgets/InventoryWidget.h"
 #include "Interfaces/InventoryWidgetsInterface.h"
+#include "Interfaces/InventoryHUDInterface.h"
 #include "PrimaryHUDWidget.generated.h"
 
 
@@ -13,6 +14,12 @@
 class UInventoryComponent;
 class UInventorySlot;
 class UPlayerInventoryWindow;
+class UTransferItemsWidget;
+
+//Minimum number of item instances stacked in a slot required to open the slider widget
+constexpr int32 MIN_REQUIRED_FOR_SLIDER = 6;
+
+
 /**
  * Widget class that displays the player's inventory and inventories in the trade mode.
  */
@@ -37,8 +44,14 @@ public:
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Subwidgets")
 	TSubclassOf<UInventorySlot> InventorySlotClass;
 
+	/** The class of the widget used to set the desired amount of copies of an item to be transferred */
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
+	TSubclassOf<UTransferItemsWidget> TransferItemsWidgetClass;
+
+	/** The widget that sets the desired amount of copies of the selected item to be transferred */
+	UTransferItemsWidget* TransferItemsWidget;
+
 	/** The slot the mouse is currently hovering over */
-	UPROPERTY(BlueprintReadWrite, EditAnywhere)
 	UInventorySlot* OverSlot;
 
 
@@ -66,6 +79,11 @@ private:
 	FReply NativeOnKeyDown(const FGeometry& InGeometry, const FKeyEvent& InKeyEvent) override;
 
 	void ExecuteKeyBinding(FName Key);
+
+	void ExecuteEKey(IInventoryHUDInterface* Interface);
+
+	UFUNCTION()
+	void HandleSliderValueConfirmed(int32 SliderValue);
 
 	void NativeOnFocusLost(const FFocusEvent& InFocusEvent) override;
 };

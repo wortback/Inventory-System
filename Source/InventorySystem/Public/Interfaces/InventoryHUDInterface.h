@@ -41,9 +41,13 @@ public:
 
 	virtual bool UnequipItem(F_InventoryItem* Item) = 0;
 
-	virtual bool SellItem(F_InventoryItem* Item) = 0;
+	virtual bool SellItem(F_InventoryItem* Item, int32 Quantity) = 0;
 
-	virtual bool BuyItem(F_InventoryItem* Item) = 0;
+	virtual bool BuyItem(F_InventoryItem* Item, int32 Quantity) = 0;
 
 	virtual void UpdateNPCComponentPtr(UInventoryComponent* InventoryComp) = 0;
+
+	virtual bool GetIsInTradeMode() const = 0;
+
+	virtual void SetIsInTradeMode(bool bIsInTradeMode) = 0;
 };

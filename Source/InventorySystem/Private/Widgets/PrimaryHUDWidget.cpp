@@ -5,10 +5,10 @@
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/Character.h"
 #include "Widgets/InventorySlot.h"
-#include "Interfaces/InventoryHUDInterface.h"
 #include "Components/WrapBox.h"
 #include "Inventory/InventoryComponent.h"
 #include "Widgets/PlayerInventoryWindow.h"
+#include "Widgets/TransferItemsWidget.h"
 #include "System/Defines.h"
 
 // Logging
@@ -177,40 +177,100 @@ void UPrimaryHUDWidget::ExecuteKeyBinding(FName Key)
 			}
 			else if (Key == "E")
 			{
-				if (OverSlot->Item.IndexLocation == EQ_ARMOUR_INDEX_LOCATION || OverSlot->Item.IndexLocation == EQ_WEAPON_INDEX_LOCATION)
-				{
-					Interface->UnequipItem(&(OverSlot->Item));
-				}
-				else
-				{
-					Interface->EquipItem(&(OverSlot->Item));
-				}
-				
-				if (OverSlot->Item.OwningInventory == Interface->GetInventoryComponent())
-				{
-					Interface->SellItem(&(OverSlot->Item));
-				}
-				else
-				{
-					Interface->BuyItem(&(OverSlot->Item));
-				}
-				
+				ExecuteEKey(Interface);
 			}
 			Interface->UpdateInventoryHUD();
 		}
 	}
 }
 
-void UPrimaryHUDWidget::NativeOnFocusLost(const FFocusEvent& InFocusEvent)
+void UPrimaryHUDWidget::ExecuteEKey(IInventoryHUDInterface* Interface)
 {
-	APlayerController* PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
-	if (PlayerController)
+	// If the character is not trading:
+	if (!Interface->GetIsInTradeMode())
 	{
-		if (PlayerController->bShowMouseCursor)
+		if (OverSlot->Item.IndexLocation == EQ_ARMOUR_INDEX_LOCATION || OverSlot->Item.IndexLocation == EQ_WEAPON_INDEX_LOCATION)
 		{
-			SetFocus();
+			Interface->UnequipItem(&(OverSlot->Item));
+		}
+		else
+		{
+			Interface->EquipItem(&(OverSlot->Item));
 		}
 	}
+	// If the character is trading:
+	else
+	{
+		if (OverSlot->Item.Quantity < MIN_REQUIRED_FOR_SLIDER)
+		{
+			// Is this item located in the character's inventory?
+			if (OverSlot->Item.OwningInventory == Interface->GetInventoryComponent())
+			{
+				Interface->SellItem(&(OverSlot->Item), 1);
+			}
+			// Or NPC's?
+			else
+			{
+				Interface->BuyItem(&(OverSlot->Item), 1);
+			}
+		}
+		else
+		{
+			TransferItemsWidget = CreateWidget<UTransferItemsWidget>(GetWorld(), TransferItemsWidgetClass);
+			if (TransferItemsWidget)
+			{
+				TransferItemsWidget->FOnSliderValueConfirmedDelegate.AddDynamic(this, &UPrimaryHUDWidget::HandleSliderValueConfirmed);
+				TransferItemsWidget->SetMaxValue(OverSlot->Item.Quantity);
+				TransferItemsWidget->SetItemSlot(OverSlot);
+				TransferItemsWidget->SetPositionInViewport(FVector2D(500, 500));
+				TransferItemsWidget->AddToViewport();
+				TransferItemsWidget->SetFocus();
+			}
+		}	
+	}
+}
+
+void UPrimaryHUDWidget::HandleSliderValueConfirmed(int32 SliderValue)
+{
+
+	ACharacter* PlayerCharacter = Cast<ACharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
+	if (PlayerCharacter)
+	{
+		IInventoryHUDInterface* Interface = Cast<IInventoryHUDInterface>(PlayerCharacter);
+		if (Interface)
+		{
+			// Is this item located in the character's inventory?
+			if (TransferItemsWidget->GetItemSlot()->Item.OwningInventory == Interface->GetInventoryComponent())
+			{
+				Interface->SellItem(&(TransferItemsWidget->GetItemSlot()->Item), SliderValue);
+			}
+			// Or NPC's?
+			else
+			{
+				Interface->BuyItem(&(TransferItemsWidget->GetItemSlot()->Item), SliderValue);
+			}
+
+			Interface->UpdateInventoryHUD();
+		}
+	}
+
+	// Set focus on the primary HUD again
+	SetFocus();
+}
+
+void UPrimaryHUDWidget::NativeOnFocusLost(const FFocusEvent& InFocusEvent)
+{
+	if (!TransferItemsWidget)
+	{
+		APlayerController* PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
+		if (PlayerController)
+		{
+			if (PlayerController->bShowMouseCursor)
+			{
+				SetFocus();
+			}
+		}
+	}	
 }
 
 void UPrimaryHUDWidget::UpdateSlotUnderCursor(UInventorySlot* SlotUnderCursor)

@@ -24,37 +24,44 @@ UInventoryComponent::UInventoryComponent()
 
 bool UInventoryComponent::ProcessItem(F_InventoryItem* Item, int32 Quantity /* = 1*/)
 {
-	if (Item->ItemType != EItemType::EIT_None)
+	if (Item)
 	{
-		int32 ItemIndexLocation = FindAvailableLocation(Item);
-		UE_LOG(LogInventoryComponent, Log, TEXT("ItemType: %s"), *(EItemTypeToString(Item->ItemType)));
-
-		if (ItemIndexLocation >= 0)
+		if (Item->ItemType != EItemType::EIT_None)
 		{
-			F_InventoryItem* AddedItem = AddItem(Item, ItemIndexLocation, Quantity);
-			if (AddedItem->Quantity > 0)
+			int32 ItemIndexLocation = FindAvailableLocation(Item);
+			UE_LOG(LogInventoryComponent, Log, TEXT("ItemType: %s"), *(EItemTypeToString(Item->ItemType)));
+
+			if (ItemIndexLocation >= 0)
 			{
-				ProcessItem(AddedItem, AddedItem->Quantity);
+				F_InventoryItem* AddedItem = AddItem(Item, ItemIndexLocation, Quantity);
+				if (AddedItem->Quantity > 0)
+				{
+					ProcessItem(AddedItem, AddedItem->Quantity);
+				}
+				else
+				{
+					delete AddedItem;
+					return true;
+				}
 			}
 			else
 			{
-				delete AddedItem;
-				return true;
+				UE_LOG(LogInventoryComponent, Warning, TEXT("Inventory is full"));
+				return false;
 			}
 		}
-		else
-		{
-			UE_LOG(LogInventoryComponent, Warning, TEXT("Inventory is full"));
-			return false;
-		}
 	}
-
+	else
+	{
+		UE_LOG(LogInventoryComponent, Log, TEXT("Failed to process the item since the pointer is invalid."));
+	}
 	return false;
 }
 
 F_InventoryItem* UInventoryComponent::AddItem(F_InventoryItem* Item, int IndexLocation, int32 Quantity /*= 1*/)
 {
 	UE_LOG(LogInventoryComponent, Log, TEXT("Adding a new item of type %s"), *(EItemTypeToString(Item->ItemType)));
+	UE_LOG(LogInventoryComponent, Log, TEXT("In quantity %s"), *FString::FromInt(Quantity));
 
 	F_InventoryItem* ItemAtLocation = &SetItemsForItemType(Item->ItemType)[IndexLocation];
 
@@ -82,10 +89,11 @@ F_InventoryItem* UInventoryComponent::AddItem(F_InventoryItem* Item, int IndexLo
 
 bool UInventoryComponent::RemoveItem(F_InventoryItem* Item, int32 Quantity)
 {
+	UE_LOG(LogInventoryComponent, Log, TEXT("Removing %s items"), *FString::FromInt(Quantity));
 	if (Item->ItemType != EItemType::EIT_None)
 	{
 		F_InventoryItem* ItemAtLocation = &SetItemsForItemType(Item->ItemType)[Item->IndexLocation];
-		if (ItemAtLocation->Quantity == 1)
+		if (ItemAtLocation->Quantity == Quantity)
 		{
 			ItemAtLocation->ItemClass = UBaseItem::StaticClass();
 			ItemAtLocation->OwningInventory = nullptr;
