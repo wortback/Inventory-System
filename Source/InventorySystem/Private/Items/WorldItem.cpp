@@ -64,11 +64,15 @@ void AWorldItem::PreInitializeComponents()
 {
 	if (ItemClass)
 	{
-		UBaseItem* Item = Cast<UBaseItem>(ItemClass->GetDefaultObject(true));
-		if (Item)
+		// Is the mesh is not set in the BP class, set 
+		if (Mesh->GetStaticMesh() == nullptr)
 		{
-			Mesh->SetStaticMesh(Item->DisplayMesh);
-			DespawnTime = Item->DespawnTime;
+			UBaseItem* Item = Cast<UBaseItem>(ItemClass->GetDefaultObject(true));
+			if (Item)
+			{
+				Mesh->SetStaticMesh(Item->DisplayMesh);
+				DespawnTime = Item->DespawnTime;
+			}
 		}
 	}
 	
