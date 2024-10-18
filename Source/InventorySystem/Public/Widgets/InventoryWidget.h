@@ -31,6 +31,7 @@ public:
 	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
 	TObjectPtr<UPlayerInventoryWindow> PlayerInventoryWindow;
 
+	// All these slots are referred as special slots
 	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
 	TObjectPtr<UInventorySlot> EquippedArmour;
 
@@ -55,6 +56,6 @@ public:
 	/** Update PlayerInventoryWindow */
 	void UpdateMenu();
 
-	/** Returns true if the index matches either equipped slot index or QA slot index */
-	bool IsSpecialSlotIndex(int32 Index);
+	/** Returns true if the DraggedSlot item can be dropped */
+	bool CanDropOnSpecialSlot(UInventorySlot* UnderDragSlot, UInventorySlot* DraggedSlot);
 };

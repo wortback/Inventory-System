@@ -178,7 +178,7 @@ void AInventoryTestCharacter::Look(const FInputActionValue& Value)
 
 void AInventoryTestCharacter::Interact(const FInputActionValue& Value)
 {
-	UE_LOG(LogTemplateCharacter, Log, TEXT("Interact action is called."));
+	//UE_LOG(LogTemplateCharacter, Log, TEXT("Interact action is called."));
 
 	IInteractableInterface* Interface = Cast<IInteractableInterface>(ViewedActor);
 	if (Interface)
@@ -328,21 +328,21 @@ bool AInventoryTestCharacter::ProcessItem(F_InventoryItem* Item, int32 Quantity)
 	return PlayerInventoryComponent->ProcessItem(Item, Quantity);
 }
 
-bool AInventoryTestCharacter::EquipItem(F_InventoryItem* Item)
+bool AInventoryTestCharacter::EquipItem(F_InventoryItem* Item, int32 Location)
 {
 	// If the character is in the trade mode with an NPC, don't equip items. 
 	if (!NPCInventoryComp)
 	{
-		return PlayerInventoryComponent->EquipItem(Item);
+		return PlayerInventoryComponent->EquipItem(Item, Location);
 	}
 	return false;
 }
 
-bool AInventoryTestCharacter::UnequipItem(F_InventoryItem* Item)
+bool AInventoryTestCharacter::UnequipItem(F_InventoryItem* Item, int32 Location)
 {
 	if (!NPCInventoryComp)
 	{
-		return PlayerInventoryComponent->UnequipItem(Item);
+		return PlayerInventoryComponent->UnequipItem(Item, Location);
 	}
 	return false;
 }

@@ -19,7 +19,7 @@ enum class EItemType : uint8
     EIT_None
 };
 
-static FString EItemTypeToString(EItemType ItemType)
+inline FString EItemTypeToString(EItemType ItemType)
 {
 	switch (ItemType)
 	{
@@ -69,7 +69,7 @@ enum class EItemRarity : uint8
 	EIR_Cursed,
 };
 
-static FString EItemRarityToString(EItemRarity ItemRarity)
+inline FString EItemRarityToString(EItemRarity ItemRarity)
 {
 	switch (ItemRarity)
 	{

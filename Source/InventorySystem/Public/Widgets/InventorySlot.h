@@ -37,14 +37,15 @@ public:
 public:
 	F_InventoryItem Item;
 
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(ExposeOnSpawn = "true"))
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, meta=(ExposeOnSpawn = "true"))
 	UPrimaryHUDWidget* OwningHUD;
 public:
 	void UpdateSlotContent();
 
-public:
 	virtual void NativeConstruct() override;
 
+private:
+	
 	virtual void NativeOnMouseEnter(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) override;
 
 	virtual void NativeOnMouseLeave(const FPointerEvent& InMouseEvent) override;
@@ -53,4 +54,10 @@ public:
 
 	virtual void NativeOnDragDetected(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent,
 		UDragDropOperation*& OutOperation) override;
+
+	virtual bool NativeOnDrop(const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation) override;
+	
+	virtual void NativeOnDragEnter(const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation) override;
+	
+	virtual void NativeOnDragLeave(const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation) override;
 };

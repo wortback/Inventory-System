@@ -90,7 +90,7 @@ public:
 	 * @param Item The item to be equipped
 	 * @return true if the removal was successful
 	 */
-	bool EquipItem(F_InventoryItem* Item);
+	bool EquipItem(F_InventoryItem* Item, int32 Location = -1);
 
 	/**
 	 * Moves the Item from the equipped slot to the inventory
@@ -99,7 +99,7 @@ public:
 	 * @param Item The item to be unequipped
 	 * @return true if the removal was successful
 	 */
-	bool UnequipItem(F_InventoryItem* Item);
+	bool UnequipItem(F_InventoryItem* Item, int32 Location = -1);
 
 	/**
 	 * Moves the Item from this inventory to another one
@@ -140,13 +140,15 @@ private:
 
 	void InitialiseEquippedItem(F_InventoryItem& Item, int32 IndexLocation);
 
+	F_InventoryItem& GetSpecialItemByIndex(int32 Index);
+
 	/**
 	 * Once an item is added to the inventory, find an available slot to host the item
 	 *
 	 * @return available index location in the inventory
 	 * @return -1, if Item cannot be added
 	 */
-	int FindAvailableLocation(F_InventoryItem* Item);
+	int32 FindAvailableLocation(F_InventoryItem* Item);
 
 	/**
 	 * Adds Item to the inventory
@@ -157,6 +159,8 @@ private:
 	F_InventoryItem* AddItem(F_InventoryItem* Item, int IndexLocation, int32 Quantity);
 
 	void SwapEquipped(F_InventoryItem& Item, F_InventoryItem& EquippedItem);
+
+	void EquipQAItem(F_InventoryItem& Item, int32 Location);
 
 
 public:	
@@ -175,6 +179,10 @@ public:
 	FORCEINLINE const F_InventoryItem& GetEquippedArmour() const { return EquippedArmour; }
 	FORCEINLINE const F_InventoryItem& GetEquippedWeapon() const { return EquippedWeapon; }
 
+	/** Returns a QA item based on its index
+	* 
+	* @param QAIndex Index of the quick item (range: 1-4)
+	*/
 	const F_InventoryItem& GetQuickAccessItem(int32 QAIndex) const;
 		
 };

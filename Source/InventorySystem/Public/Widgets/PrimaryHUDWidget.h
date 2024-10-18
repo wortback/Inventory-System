@@ -54,7 +54,6 @@ public:
 	/** The slot the mouse is currently hovering over */
 	UInventorySlot* OverSlot;
 
-
 public:
 	void ShowPlayerInventory(bool bShowInventory);
 
@@ -71,6 +70,11 @@ public:
 	 */
 	UFUNCTION()
 	virtual void UpdateSlotUnderCursor(UInventorySlot* SlotUnderCursor) override;
+
+	/** Update inventory menus */
+	void UpdateHUD();
+
+	void OnItemDrop(UInventorySlot* UnderDragSlot, UInventorySlot* DragSlot);
 
 private:
 	virtual FReply NativeOnKeyDown(const FGeometry& InGeometry, const FKeyEvent& InKeyEvent) override;
@@ -90,5 +94,10 @@ private:
 	UFUNCTION()
 	void HandleSliderValueConfirmed(int32 SliderValue);
 
-	
+	/**
+	 * Create widget that allows to specify the number of items to be transferred (TransferItemsWidget)
+	 * 
+	 * @param ItemSlot Slot that contains the item that will be transferred
+	 */
+	void CreateTransferWidget(UInventorySlot* ItemSlot);
 };

@@ -68,7 +68,7 @@ void UPrimaryHUDWidget::UpdateInventory(const UInventoryComponent* InventoryComp
 			InventoryMenu->PlayerInventoryWindow->InventoryBox->AddChildToWrapBox(ChildSlot);
 		}
 
-		//InventoryMenu->QuickSlot1, InventoryMenu->QuickSlot2, InventoryMenu->QuickSlot3, InventoryMenu->QuickSlot4
+		// Update special slots
 		TArray<TObjectPtr<UInventorySlot>> EquippedSlots = { InventoryMenu->EquippedArmour, InventoryMenu->EquippedWeapon };
 		TArray<TObjectPtr<UInventorySlot>> QASlots = { InventoryMenu->QuickSlot1, InventoryMenu->QuickSlot2, 
 													   InventoryMenu->QuickSlot3, InventoryMenu->QuickSlot4 };
@@ -77,7 +77,7 @@ void UPrimaryHUDWidget::UpdateInventory(const UInventoryComponent* InventoryComp
 		{
 			UpdateEquippedAndQASlots(EquippedSlots[i], EquippedItems[i]);
 		}
-		for (int32 i = 0; i < EquippedSlots.Num(); ++i)
+		for (int32 i = 0; i < QASlots.Num(); ++i)
 		{
 			UpdateEquippedAndQASlots(QASlots[i], &InventoryComponent->GetQuickAccessItem(i+1));
 		}
@@ -203,9 +203,9 @@ void UPrimaryHUDWidget::ExecuteEKey(IInventoryHUDInterface* Interface)
 	// If the character is not trading:
 	if (!Interface->GetIsInTradeMode())
 	{
-		if (InventoryMenu->IsSpecialSlotIndex(OverSlot->Item.IndexLocation))
+		if (IsSpecialItemIndex(OverSlot->Item.IndexLocation))
 		{
-			Interface->UnequipItem(&(OverSlot->Item));
+			Interface->UnequipItem(&(OverSlot->Item), OverSlot->Item.IndexLocation);
 		}
 		else
 		{
@@ -230,16 +230,7 @@ void UPrimaryHUDWidget::ExecuteEKey(IInventoryHUDInterface* Interface)
 		}
 		else
 		{
-			TransferItemsWidget = CreateWidget<UTransferItemsWidget>(GetWorld(), TransferItemsWidgetClass);
-			if (TransferItemsWidget)
-			{
-				TransferItemsWidget->FOnSliderValueConfirmedDelegate.AddDynamic(this, &UPrimaryHUDWidget::HandleSliderValueConfirmed);
-				TransferItemsWidget->SetMaxValue(OverSlot->Item.Quantity);
-				TransferItemsWidget->SetItemSlot(OverSlot);
-				TransferItemsWidget->SetPositionInViewport(FVector2D(500, 500));
-				TransferItemsWidget->AddToViewport();
-				TransferItemsWidget->SetFocus();
-			}
+			CreateTransferWidget(OverSlot);
 		}	
 	}
 }
@@ -272,6 +263,20 @@ void UPrimaryHUDWidget::HandleSliderValueConfirmed(int32 SliderValue)
 	SetFocus();
 }
 
+void UPrimaryHUDWidget::CreateTransferWidget(UInventorySlot* ItemSlot)
+{
+	TransferItemsWidget = CreateWidget<UTransferItemsWidget>(GetWorld(), TransferItemsWidgetClass);
+	if (TransferItemsWidget)
+	{
+		TransferItemsWidget->FOnSliderValueConfirmedDelegate.AddDynamic(this, &UPrimaryHUDWidget::HandleSliderValueConfirmed);
+		TransferItemsWidget->SetMaxValue(ItemSlot->Item.Quantity);
+		TransferItemsWidget->SetItemSlot(ItemSlot);
+		TransferItemsWidget->SetPositionInViewport(FVector2D(500, 500));
+		TransferItemsWidget->AddToViewport();
+		TransferItemsWidget->SetFocus();
+	}
+}
+
 void UPrimaryHUDWidget::NativeOnFocusLost(const FFocusEvent& InFocusEvent)
 {
 	if (!TransferItemsWidget)
@@ -291,3 +296,71 @@ void UPrimaryHUDWidget::UpdateSlotUnderCursor(UInventorySlot* SlotUnderCursor)
 {
 	OverSlot = SlotUnderCursor;
 }
+
+void UPrimaryHUDWidget::UpdateHUD()
+{
+	ACharacter* PlayerCharacter = Cast<ACharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
+	if (PlayerCharacter)
+	{
+		IInventoryHUDInterface* Interface = Cast<IInventoryHUDInterface>(PlayerCharacter);
+		if (Interface)
+		{
+			Interface->UpdateInventoryHUD();
+		}
+	}
+}
+
+void UPrimaryHUDWidget::OnItemDrop(UInventorySlot* UnderDragSlot, UInventorySlot* DragSlot)
+{
+	ACharacter* PlayerCharacter = Cast<ACharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
+	if (PlayerCharacter)
+	{
+		IInventoryHUDInterface* Interface = Cast<IInventoryHUDInterface>(PlayerCharacter);
+		if (Interface)
+		{
+			// Is the item dropped on special slot? 
+			if (IsSpecialItemIndex(UnderDragSlot->Item.IndexLocation))
+			{
+				// Check if the item is dropped on a special slot or not
+				if (InventoryMenu->CanDropOnSpecialSlot(UnderDragSlot, DragSlot))
+				{
+					UE_LOG(LogInventoryHUD, Warning, TEXT("DragSlotIndex %d"), DragSlot->Item.IndexLocation);
+					UE_LOG(LogInventoryHUD, Warning, TEXT("UnderDragSlotIndex %d"), UnderDragSlot->Item.IndexLocation);
+					Interface->EquipItem(&(DragSlot->Item), UnderDragSlot->Item.IndexLocation);
+				}
+			}
+			// If the item dragged from the special slot back to the inventory? 
+			else if (IsSpecialItemIndex(DragSlot->Item.IndexLocation))
+			{
+				Interface->UnequipItem(&(DragSlot->Item), DragSlot->Item.IndexLocation);
+			}
+			else
+			{
+				UE_LOG(LogInventoryHUD, Warning, TEXT("Debug point5"));
+				if (DragSlot->Item.Quantity < MIN_REQUIRED_FOR_SLIDER)
+				{
+					// Is this item located in the character's inventory?
+					if (UnderDragSlot->Item.OwningInventory != Interface->GetInventoryComponent()
+						&& DragSlot->Item.OwningInventory == Interface->GetInventoryComponent())
+					{
+						UE_LOG(LogInventoryHUD, Warning, TEXT("Selling the item..."));
+						Interface->SellItem(&(DragSlot->Item), 1);
+					}
+					// Or NPC's?
+					else if (UnderDragSlot->Item.OwningInventory == Interface->GetInventoryComponent()
+						&& DragSlot->Item.OwningInventory != Interface->GetInventoryComponent())
+					{
+						UE_LOG(LogInventoryHUD, Warning, TEXT("Buying the item..."));
+						Interface->BuyItem(&(DragSlot->Item), 1);
+					}
+				}
+				else
+				{
+					CreateTransferWidget(DragSlot);
+				}
+			}
+			
+		}
+	}
+}
+

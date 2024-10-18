@@ -114,9 +114,9 @@ protected:
 
 	virtual bool ProcessItem(F_InventoryItem* Item, int32 Quantity) override;
 
-	virtual bool EquipItem(F_InventoryItem* Item) override;
+	virtual bool EquipItem(F_InventoryItem* Item, int32 Location = -1) override;
 
-	virtual bool UnequipItem(F_InventoryItem* Item) override;
+	virtual bool UnequipItem(F_InventoryItem* Item, int32 Location = -1) override;
 
 	virtual bool SellItem(F_InventoryItem* Item, int32 Quantity) override;
 

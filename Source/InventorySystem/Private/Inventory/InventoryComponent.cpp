@@ -130,7 +130,7 @@ bool UInventoryComponent::RemoveItem(F_InventoryItem* Item, int32 Quantity)
 	return false;
 }
 
-bool UInventoryComponent::EquipItem(F_InventoryItem* Item)
+bool UInventoryComponent::EquipItem(F_InventoryItem* Item, int32 Location)
 {
 	switch (Item->ItemType)
 	{
@@ -145,7 +145,7 @@ bool UInventoryComponent::EquipItem(F_InventoryItem* Item)
 		return true;
 	case EItemType::EIT_Consumable:
 		UE_LOG(LogInventoryComponent, Log, TEXT("Equipping the consumable..."));
-		SwapEquipped(*Item, QuickAccessItem1);
+		EquipQAItem(*Item, Location);
 		return true;
 	case EItemType::EIT_None:
 	case EItemType::EIT_Miscellaneous:
@@ -156,7 +156,7 @@ bool UInventoryComponent::EquipItem(F_InventoryItem* Item)
 	}
 }
 
-bool UInventoryComponent::UnequipItem(F_InventoryItem* Item)
+bool UInventoryComponent::UnequipItem(F_InventoryItem* Item, int32 Location)
 {
 	UE_LOG(LogInventoryComponent, Log, TEXT("Unequipping the item..."));
 	if (ProcessItem(Item, Item->Quantity))
@@ -171,7 +171,8 @@ bool UInventoryComponent::UnequipItem(F_InventoryItem* Item)
 		}
 		else if (Item->ItemType == EItemType::EIT_Consumable)
 		{
-			QuickAccessItem1.ClearItem();
+			F_InventoryItem& ItemAtLocation = GetSpecialItemByIndex(Location);
+			ItemAtLocation.ClearItem();
 		}
 	}
 	return false;
@@ -206,19 +207,68 @@ void UInventoryComponent::SwapEquipped(F_InventoryItem& Item, F_InventoryItem& E
 		UE_LOG(LogInventoryComponent, Error, TEXT("[SwapItem] Index location %d is out of bound."), Item.IndexLocation);
 		return;
 	}
-	F_InventoryItem* ItemAtLocation = &SetItemsForItemType(Item.ItemType)[Item.IndexLocation];
+
+	F_InventoryItem& ItemAtLocation = SetItemsForItemType(Item.ItemType)[Item.IndexLocation];
 	F_InventoryItem Temp;
 	Temp.ItemClass = EquippedItem.ItemClass;
 	Temp.ItemType = EquippedItem.ItemType;
 	Temp.Quantity = EquippedItem.Quantity;
 
-	EquippedItem.ItemClass = ItemAtLocation->ItemClass;
-	EquippedItem.ItemType = ItemAtLocation->ItemType;
-	EquippedItem.Quantity = ItemAtLocation->Quantity;
+	EquippedItem.ItemClass = ItemAtLocation.ItemClass;
+	EquippedItem.ItemType = ItemAtLocation.ItemType;
+	EquippedItem.Quantity = ItemAtLocation.Quantity;
 
-	ItemAtLocation->ItemClass = Temp.ItemClass;
-	ItemAtLocation->ItemType = Temp.ItemType;
-	ItemAtLocation->Quantity = Temp.Quantity;
+	ItemAtLocation.ItemClass = Temp.ItemClass;
+	ItemAtLocation.ItemType = Temp.ItemType;
+	ItemAtLocation.Quantity = Temp.Quantity;
+}
+
+void UInventoryComponent::EquipQAItem(F_InventoryItem& Item, int32 Location)
+{
+	F_InventoryItem& EquippedItem = GetSpecialItemByIndex(Location);
+	// Inventory to Special (empty) equip
+	if (!IsQAItemIndex(Item.IndexLocation) && IsQAItemIndex(Location) && EquippedItem.ItemType == EItemType::EIT_None)
+	{
+		EquippedItem.ItemClass = Item.ItemClass;
+		EquippedItem.ItemType = Item.ItemType;
+		EquippedItem.Quantity = Item.Quantity;
+
+		F_InventoryItem& ItemAtLocation = SetItemsForItemType(Item.ItemType)[Item.IndexLocation];
+		ItemAtLocation.ClearItem();
+	}
+	// Inventory to Special (not empty) swap
+	else if (!IsQAItemIndex(Item.IndexLocation) && IsQAItemIndex(Location) && EquippedItem.ItemType != EItemType::EIT_None)
+	{
+		SwapEquipped(Item, EquippedItem);
+	}
+	// Special to inventory (empty) unequip
+	else if (IsQAItemIndex(Item.IndexLocation) && !IsQAItemIndex(Location) && EquippedItem.ItemType == EItemType::EIT_None)
+	{
+		UnequipItem(&Item, Location);
+	}
+	// Special to inventory (not empty)
+	else if (IsQAItemIndex(Item.IndexLocation) && !IsQAItemIndex(Location) && EquippedItem.ItemType != EItemType::EIT_None)
+	{
+		SwapEquipped(EquippedItem, Item);
+	}
+	// Special to special
+	else if (IsQAItemIndex(Item.IndexLocation) && IsQAItemIndex(Location))
+	{
+		F_InventoryItem Temp = EquippedItem;
+		Temp.ItemClass = EquippedItem.ItemClass;
+		Temp.ItemType = EquippedItem.ItemType;
+		Temp.Quantity = EquippedItem.Quantity;
+
+		EquippedItem.ItemClass = Item.ItemClass;
+		EquippedItem.ItemType = Item.ItemType;
+		EquippedItem.Quantity = Item.Quantity;
+
+		F_InventoryItem& ItemAtLocation = GetSpecialItemByIndex(Item.IndexLocation);
+		ItemAtLocation.ItemClass = Temp.ItemClass;
+		ItemAtLocation.ItemType = Temp.ItemType;
+		ItemAtLocation.Quantity = Temp.Quantity;
+	}
+	
 }
 
 const TArray<F_InventoryItem>& UInventoryComponent::GetItemsForItemType(EItemType ItemType) const
@@ -241,7 +291,7 @@ const TArray<F_InventoryItem>& UInventoryComponent::GetItemsForItemType(EItemTyp
 	}
 }
 
-int UInventoryComponent::FindAvailableLocation(F_InventoryItem* Item)
+int32 UInventoryComponent::FindAvailableLocation(F_InventoryItem* Item)
 {
 	UE_LOG(LogInventoryComponent, Log, TEXT("Searching for an available location..."));
 
@@ -291,7 +341,7 @@ TArray<F_InventoryItem>& UInventoryComponent::SetItemsForItemType(EItemType Item
 		return MiscellaneousItems;
 	case EItemType::EIT_None:
 	default:
-		UE_LOG(LogInventoryComponent, Warning, TEXT("Cannot get the inventory section for an item since the item is of type EIT_None."));
+		UE_LOG(LogInventoryComponent, Error, TEXT("Cannot get the inventory section for an item since the item is of type EIT_None."));
 		return Equipment;
 	}
 }
@@ -309,8 +359,8 @@ void UInventoryComponent::InitialiseInventory()
 	// Initialise Equipped Items (special items)
 	TArray<F_InventoryItem*> EquippedItems = { &EquippedArmour, &EquippedWeapon,
 		&QuickAccessItem1, &QuickAccessItem2, &QuickAccessItem3, &QuickAccessItem4 };
-	TArray<int32> SpecialIndexLocations = { EQ_ARMOUR_INDEX_LOCATION, EQ_WEAPON_INDEX_LOCATION, QUICK_SLOT_1_INDEX_LOCATION,
-											QUICK_SLOT_2_INDEX_LOCATION, QUICK_SLOT_3_INDEX_LOCATION, QUICK_SLOT_4_INDEX_LOCATION };
+	TArray<int32> SpecialIndexLocations = { EQ_ARMOUR_INDEX_LOCATION, EQ_WEAPON_INDEX_LOCATION, QUICK_ITEM_1_INDEX_LOCATION,
+											QUICK_ITEM_2_INDEX_LOCATION, QUICK_ITEM_3_INDEX_LOCATION, QUICK_ITEM_4_INDEX_LOCATION };
 
 	for (int32 i = 0; i < EquippedItems.Num(); ++i)
 	{
@@ -339,6 +389,29 @@ void UInventoryComponent::InitialiseEquippedItem(F_InventoryItem& Item, int32 In
 	Item.IndexLocation = IndexLocation;
 	Item.ItemClass = UBaseItem::StaticClass();
 	Item.ItemType = EItemType::EIT_None;
+}
+
+F_InventoryItem& UInventoryComponent::GetSpecialItemByIndex(int32 Index)
+{
+	switch (Index)
+	{
+	case EQ_ARMOUR_INDEX_LOCATION:
+		return EquippedArmour;
+	case EQ_WEAPON_INDEX_LOCATION:
+		return EquippedWeapon;
+	case QUICK_ITEM_1_INDEX_LOCATION:
+		return QuickAccessItem1;
+	case QUICK_ITEM_2_INDEX_LOCATION:
+		return QuickAccessItem2;
+	case QUICK_ITEM_3_INDEX_LOCATION:
+		return QuickAccessItem3;
+	case QUICK_ITEM_4_INDEX_LOCATION:
+		return QuickAccessItem4;
+	default:
+		UE_LOG(LogInventoryComponent, Error, TEXT("Index %d"), Index);
+		UE_LOG(LogInventoryComponent, Error, TEXT("Provided index does not match any special item index!"));
+		return EquippedArmour;
+	}
 }
 
 // Called when the game starts

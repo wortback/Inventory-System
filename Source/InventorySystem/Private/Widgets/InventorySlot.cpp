@@ -7,6 +7,8 @@
 #include "Items/BaseItem.h"
 #include "Components/Image.h"
 #include "Components/TextBlock.h"
+#include "Interfaces/InventoryWidgetsInterface.h"
+#include "Kismet/GameplayStatics.h"
 
 // Logging
 #include "InventorySystem.h"
@@ -76,6 +78,7 @@ void UInventorySlot::NativeOnMouseEnter(const FGeometry& InGeometry, const FPoin
 	{
 		UE_LOG(LogInventoryHUD, Log, TEXT("ItemType %s"), *(EItemTypeToString(Item.ItemType)));
 		UE_LOG(LogInventoryHUD, Log, TEXT("ItemQuantity %d"), Item.Quantity);
+		UE_LOG(LogInventoryHUD, Log, TEXT("ItemIndexLocation %d"), Item.IndexLocation);
 		IInventoryWidgetsInterface* Interface = Cast<IInventoryWidgetsInterface>(OwningHUD);
 		if (Interface)
 		{
@@ -115,16 +118,53 @@ FReply UInventorySlot::NativeOnMouseButtonDown(const FGeometry& InGeometry, cons
 void UInventorySlot::NativeOnDragDetected(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent, 
 	UDragDropOperation*& OutOperation)
 {
-	UE_LOG(LogTemp, Warning, TEXT("Drag Inventory slot detected"));
+	UE_LOG(LogInventoryHUD, Warning, TEXT("Drag Inventory slot detected"));
 
 	// if the slot is empty, don't drag anything
 	if (!(Item.ItemClass == UBaseItem::StaticClass()))
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Drag possible."));
+		UE_LOG(LogInventoryHUD, Log, TEXT("Drag possible."));
 		UInventorySlotDragDropOperation* DragNDrop = NewObject<class UInventorySlotDragDropOperation>();
 		DragNDrop->Payload = this;
 		DragNDrop->DefaultDragVisual = this;
+		DragNDrop->Dragged(InMouseEvent);
 
 		OutOperation = DragNDrop;
+	}
+}
+
+bool UInventorySlot::NativeOnDrop(const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation)
+{
+	UE_LOG(LogInventoryHUD, Warning, TEXT("NativeOnDrop by slot %d"), this->Item.IndexLocation);
+	UInventorySlotDragDropOperation* DragNDrop = Cast<UInventorySlotDragDropOperation>(InOperation);
+	if (DragNDrop)
+	{
+		DragNDrop->Drop(InDragDropEvent);
+	}
+
+	if (OwningHUD)
+	{
+		OwningHUD->UpdateHUD();
+	}
+	
+
+	return true;
+}
+
+void UInventorySlot::NativeOnDragEnter(const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation)
+{
+	IInventoryWidgetsInterface* Interface = Cast<IInventoryWidgetsInterface>(InOperation);
+	if (Interface)
+	{
+		Interface->UpdateSlotUnderCursor(this);
+	}
+}
+
+void UInventorySlot::NativeOnDragLeave(const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation)
+{
+	IInventoryWidgetsInterface* Interface = Cast<IInventoryWidgetsInterface>(InOperation);
+	if (Interface)
+	{
+		Interface->UpdateSlotUnderCursor(nullptr);
 	}
 }

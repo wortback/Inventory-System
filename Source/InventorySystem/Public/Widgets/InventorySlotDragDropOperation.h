@@ -17,9 +17,18 @@ class INVENTORYSYSTEM_API UInventorySlotDragDropOperation : public UDragDropOper
 {
 	GENERATED_BODY()
 	
-	UInventorySlot* UnderDragSlot;
+	/** Slot that is located under the dragged slot */
+	UInventorySlot* UnderDragSlot = nullptr;
 
 public:
+	UInventorySlotDragDropOperation(const FObjectInitializer& ObjectInitializer);
+
 	virtual void UpdateSlotUnderCursor(UInventorySlot* SlotUnderCursor) override;
+
+	virtual void Drop(const FPointerEvent& PointerEvent);
+
+	virtual void DragCancelled(const FPointerEvent& PointerEvent);
+
+	virtual void Dragged(const FPointerEvent& PointerEvent);
 
 };
