@@ -25,14 +25,37 @@ public:
 	TObjectPtr<UButton> UseButton;
 
 	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
-	TObjectPtr<UTextBlock> ItemName;
+	TObjectPtr<UImage> Background;
 
 	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
-	TObjectPtr<UImage> Thumbnail;
+	TObjectPtr<UImage> Icon;
 
 	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
 	TObjectPtr<UTextBlock> AmountText;
+
+	/** Slot background an empty slot (default) */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Slot Texture")
+	UTexture2D* EmptyBG = nullptr;
 	
+	/** Slot background for item of type common */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Slot Texture")
+	UTexture2D* CommonBG = nullptr;
+
+	/** Slot background for item of type common */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Slot Texture")
+	UTexture2D* UncommonBG = nullptr;
+
+	/** Slot background for item of type common */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Slot Texture")
+	UTexture2D* RareBG = nullptr;
+
+	/** Slot background for item of type common */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Slot Texture")
+	UTexture2D* DivineBG = nullptr;
+
+	/** Slot background for item of type common */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Slot Texture")
+	UTexture2D* CursedBG = nullptr;
 
 public:
 	F_InventoryItem Item;
@@ -45,7 +68,9 @@ public:
 	virtual void NativeConstruct() override;
 
 private:
-	
+	/************************************************************************/
+	/* Native Events                                                                     */
+	/************************************************************************/
 	virtual void NativeOnMouseEnter(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) override;
 
 	virtual void NativeOnMouseLeave(const FPointerEvent& InMouseEvent) override;
@@ -60,4 +85,8 @@ private:
 	virtual void NativeOnDragEnter(const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation) override;
 	
 	virtual void NativeOnDragLeave(const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation) override;
+
+	//////////////////////////////////////////////////////////////////////////
+
+	void SetBackgroundByItemRarity(EItemRarity ItemRarity);
 };

@@ -64,7 +64,6 @@ enum class EItemRarity : uint8
 	EIR_Common,
 	EIR_Uncommon,
 	EIR_Rare,
-	EIR_Mythic,
 	EIR_Divine,
 	EIR_Cursed,
 };
@@ -78,9 +77,6 @@ inline FString EItemRarityToString(EItemRarity ItemRarity)
 		break;
 	case EItemRarity::EIR_Rare:
 		return FString("EIR_Rare");
-		break;
-	case EItemRarity::EIR_Mythic:
-		return FString("EIR_Mythic");
 		break;
 	case EItemRarity::EIR_Divine:
 		return FString("EIR_Divine");

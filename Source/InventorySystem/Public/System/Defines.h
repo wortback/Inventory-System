@@ -16,6 +16,10 @@ constexpr int32 QUICK_ITEM_2_INDEX_LOCATION = -5;
 constexpr int32 QUICK_ITEM_3_INDEX_LOCATION = -6;
 constexpr int32 QUICK_ITEM_4_INDEX_LOCATION = -7;
 
+// Capacity extension factor (the number of slots added)
+constexpr int32 CAPACITY_INCREASE_FACTOR	= 15;
+
+
 /** True if the index matches either one of the indices of equipped items or QA items */
 inline bool IsSpecialItemIndex(int32 Index)
 {

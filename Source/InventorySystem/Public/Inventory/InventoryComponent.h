@@ -36,13 +36,13 @@ private:
 	/** Array for items of type MiscellaneousItem */
 	TArray<F_InventoryItem> MiscellaneousItems;
 
-	int32 EquipmentCapacity = 15;
+	int32 EquipmentInitialCapacity = 2;
 
-	int32 QuestItemsCapacity = 30;
+	int32 QuestItemsInitialCapacity = 30;
 
-	int32 ConsumablesCapacity = 30;
+	int32 ConsumablesInitialCapacity = 2;
 
-	int32 MiscellaneousItemsCapacity = 30;
+	int32 MiscellaneousItemsInitialCapacity = 30;
 
 	/** Inventory item reserved for the equipped armour */
 	F_InventoryItem EquippedArmour;
@@ -133,10 +133,16 @@ protected:
 
 	virtual void BeginPlay() override;
 
+	
 private:
 	void InitialiseInventory();
 
-	void InitialiseItemArray(TArray<F_InventoryItem>& ItemArr, int32 Capacity);
+	/**
+	 * Initialises the array with empty inventory items of type EIT_None and ItemClass BaseItem
+	 * 
+	 * @param Index optional: start initialising the indices of the array items from the given index
+	 */
+	void InitialiseItemArray(TArray<F_InventoryItem>& ItemArr, int32 Capacity, int32 Index = 0);
 
 	void InitialiseEquippedItem(F_InventoryItem& Item, int32 IndexLocation);
 
@@ -146,7 +152,7 @@ private:
 	 * Once an item is added to the inventory, find an available slot to host the item
 	 *
 	 * @return available index location in the inventory
-	 * @return -1, if Item cannot be added
+	 * @return DEFAULT_INDEX_LOCATION, if Item cannot be added
 	 */
 	int32 FindAvailableLocation(F_InventoryItem* Item);
 
@@ -162,6 +168,7 @@ private:
 
 	void EquipQAItem(F_InventoryItem& Item, int32 Location);
 
+	int32 CheckIsIndexLocationValid(int32 ItemIndexLocation, F_InventoryItem* Item);
 
 public:	
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
@@ -171,10 +178,10 @@ public:
 	FORCEINLINE const TArray<F_InventoryItem>& GetConsumables() const { return Consumables; }
 	FORCEINLINE const TArray<F_InventoryItem>& GetMiscellaneousItems() const { return MiscellaneousItems; }
 
-	FORCEINLINE int32 GetEquipmentCapacity() const { return EquipmentCapacity; }
-	FORCEINLINE int32 GetQuestItemsCapacity() const { return QuestItemsCapacity; }
-	FORCEINLINE int32 GetConsumablesCapacity() const { return ConsumablesCapacity; }
-	FORCEINLINE int32 GetMiscellaneousItemsCapacity() const { return MiscellaneousItemsCapacity; }
+	FORCEINLINE int32 GetEquipmentCapacity() const { return EquipmentInitialCapacity; }
+	FORCEINLINE int32 GetQuestItemsCapacity() const { return QuestItemsInitialCapacity; }
+	FORCEINLINE int32 GetConsumablesCapacity() const { return ConsumablesInitialCapacity; }
+	FORCEINLINE int32 GetMiscellaneousItemsCapacity() const { return MiscellaneousItemsInitialCapacity; }
 
 	FORCEINLINE const F_InventoryItem& GetEquippedArmour() const { return EquippedArmour; }
 	FORCEINLINE const F_InventoryItem& GetEquippedWeapon() const { return EquippedWeapon; }

@@ -105,20 +105,20 @@ bool AWorldItem::Interact(UInventoryComponent* Inventory)
 
 			UE_LOG(LogItems, Log, TEXT("Interacting with the item of type %s"), *(EItemTypeToString(BaseItem->ItemType)));
 			Item->ItemType = BaseItem->ItemType;
-		}
 
-		if (Inventory->ProcessItem(Item, Item->Quantity))
-		{
-			UE_LOG(LogItems, Log, TEXT("Handle successful item processing."));
-			Destroy();
+			if (Inventory->ProcessItem(Item, Item->Quantity))
+			{
+				UE_LOG(LogItems, Log, TEXT("Handle successful item processing."));
+				Destroy();
 
-			delete Item;
-			return true;
-		}
-		else
-		{
-			delete Item;
-			return false;
+				delete Item;
+				return true;
+			}
+			else
+			{
+				delete Item;
+				return false;
+			}
 		}
 	}
 	delete Item;

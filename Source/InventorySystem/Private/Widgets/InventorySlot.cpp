@@ -19,26 +19,24 @@ void UInventorySlot::UpdateSlotContent()
 	if (Item.ItemType != EItemType::EIT_None)
 	{
 		UBaseItem* BaseItem = Cast<UBaseItem>(Item.ItemClass->GetDefaultObject(true));
-		
-		if (Thumbnail)
+		if (BaseItem)
 		{
-			UE_LOG(LogInventoryHUD, Log, TEXT("Image is not null."));
-		}
+			SetBackgroundByItemRarity(BaseItem->ItemRarity);
 
-		// Since by default the slot image is transparent, we set another colour to remove transparency of the image first
-		Thumbnail->SetColorAndOpacity(FLinearColor::White);
-		Thumbnail->SetBrushFromTexture(BaseItem->Thumbnail);
+			// Since by default the slot image is transparent, we set another colour to remove transparency of the image first
+			Icon->SetColorAndOpacity(FLinearColor::White);
+			Icon->SetBrushFromTexture(BaseItem->Thumbnail);
 
-		ItemName->SetText(BaseItem->ItemName);
-		if (BaseItem->bIsStackable)
-		{
-			AmountText->SetText(FText::FromString(FString::FromInt(Item.Quantity)));
+			if (BaseItem->bIsStackable)
+			{
+				AmountText->SetText(FText::FromString(FString::FromInt(Item.Quantity)));
+			}
 		}
 	}
 	else
 	{
-		Thumbnail->SetColorAndOpacity(FLinearColor::Transparent);
-		ItemName->SetText(FText::GetEmpty());
+		Background->SetBrushFromTexture(EmptyBG);
+		Icon->SetColorAndOpacity(FLinearColor::Transparent);
 		AmountText->SetText(FText::GetEmpty());
 	}
 }
@@ -48,14 +46,15 @@ void UInventorySlot::NativeConstruct()
 	if (Item.Quantity > 0)
 	{
 		UBaseItem* BaseItem = Cast<UBaseItem>(Item.ItemClass->GetDefaultObject(true));
-		
 		if (BaseItem)
 		{	
+			SetBackgroundByItemRarity(BaseItem->ItemRarity);
+			if (BaseItem->Thumbnail)
+			{
+				Icon->SetColorAndOpacity(FLinearColor::White);
+				Icon->SetBrushFromTexture(BaseItem->Thumbnail);
+			}
 
-			if (BaseItem->Thumbnail) 
-				Thumbnail->SetBrushFromTexture(BaseItem->Thumbnail);
-
-			ItemName->SetText(BaseItem->ItemName);
 			if (BaseItem->bIsStackable)
 			{
 				AmountText->SetText(FText::FromString(FString::FromInt(Item.Quantity)));
@@ -66,8 +65,8 @@ void UInventorySlot::NativeConstruct()
 	{
 		// NB: if SetBrushFromTexture is called, the image appears transparent, because the alpha 
 		// set by transparent colour persists until modified
-		Thumbnail->SetColorAndOpacity(FLinearColor::Transparent);
-		ItemName->SetText(FText::GetEmpty());
+		Background->SetBrushFromTexture(EmptyBG);
+		Icon->SetColorAndOpacity(FLinearColor::Transparent);
 		AmountText->SetText(FText::GetEmpty());
 	}
 }
@@ -166,5 +165,34 @@ void UInventorySlot::NativeOnDragLeave(const FDragDropEvent& InDragDropEvent, UD
 	if (Interface)
 	{
 		Interface->UpdateSlotUnderCursor(nullptr);
+	}
+}
+
+void UInventorySlot::SetBackgroundByItemRarity(EItemRarity ItemRarity)
+{
+	switch (ItemRarity)
+	{
+	case EItemRarity::EIR_Common:
+		Background->SetColorAndOpacity(FLinearColor::White);
+		Background->SetBrushFromTexture(CommonBG);
+		break;
+	case EItemRarity::EIR_Uncommon:
+		Background->SetColorAndOpacity(FLinearColor::White);
+		Background->SetBrushFromTexture(UncommonBG);
+		break;
+	case EItemRarity::EIR_Rare:
+		Background->SetColorAndOpacity(FLinearColor::White);
+		Background->SetBrushFromTexture(RareBG);
+		break;
+	case EItemRarity::EIR_Divine:
+		Background->SetColorAndOpacity(FLinearColor::White);
+		Background->SetBrushFromTexture(DivineBG);
+		break;
+	case EItemRarity::EIR_Cursed:
+		Background->SetColorAndOpacity(FLinearColor::White);
+		Background->SetBrushFromTexture(CursedBG);
+		break;
+	default:
+		break;
 	}
 }

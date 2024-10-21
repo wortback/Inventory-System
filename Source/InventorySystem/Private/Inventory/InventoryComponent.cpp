@@ -22,13 +22,22 @@ UInventoryComponent::UInventoryComponent()
 	PrimaryComponentTick.bCanEverTick = false;
 }
 
+// Called when the game starts
+void UInventoryComponent::BeginPlay()
+{
+	Super::BeginPlay();
+
+	InitialiseInventory();
+}
+
 bool UInventoryComponent::ProcessItem(F_InventoryItem* Item, int32 Quantity /* = 1*/)
 {
 	if (Item)
 	{
 		if (Item->ItemType != EItemType::EIT_None)
 		{
-			int32 ItemIndexLocation = FindAvailableLocation(Item);
+			int32 ItemIndexLocation = CheckIsIndexLocationValid(FindAvailableLocation(Item), Item);
+
 			UE_LOG(LogInventoryComponent, Log, TEXT("ItemType: %s"), *(EItemTypeToString(Item->ItemType)));
 
 			if (ItemIndexLocation >= 0)
@@ -42,10 +51,12 @@ bool UInventoryComponent::ProcessItem(F_InventoryItem* Item, int32 Quantity /* =
 				}
 				else if (AddedItem->Quantity > 0)
 				{
-					ProcessItem(AddedItem, AddedItem->Quantity);
+					return ProcessItem(AddedItem, AddedItem->Quantity);
 				}
 				else
 				{
+					SET_WARN_COLOR(COLOR_CYAN);
+					UE_LOG(LogInventoryComponent, Warning, TEXT("Item is successfully added to the inventory!"));
 					delete AddedItem;
 					return true;
 				}
@@ -64,10 +75,29 @@ bool UInventoryComponent::ProcessItem(F_InventoryItem* Item, int32 Quantity /* =
 	return false;
 }
 
+int32 UInventoryComponent::CheckIsIndexLocationValid(int32 ItemIndexLocation, F_InventoryItem* Item)
+{
+	if (ItemIndexLocation == DEFAULT_INDEX_LOCATION)
+	{
+		int32 Capacity = GetItemsForItemType(Item->ItemType).Num();
+		TArray<F_InventoryItem>& Items = SetItemsForItemType(Item->ItemType);
+		UE_LOG(LogInventoryComponent, Log, TEXT("Extending current inventory capacity."));
+		UE_LOG(LogInventoryComponent, Log, TEXT("Current capacity is: %d"), Capacity);
+		UE_LOG(LogInventoryComponent, Log, TEXT("New capacity is: %d"), Capacity + CAPACITY_INCREASE_FACTOR);
+		TArray<F_InventoryItem> TempEmpty;
+		InitialiseItemArray(TempEmpty, CAPACITY_INCREASE_FACTOR, Capacity);
+		Items.Append(TempEmpty);
+
+		ItemIndexLocation = FindAvailableLocation(Item);
+	}
+
+	return ItemIndexLocation;
+}
+
 F_InventoryItem* UInventoryComponent::AddItem(F_InventoryItem* Item, int IndexLocation, int32 Quantity /*= 1*/)
 {
 	UE_LOG(LogInventoryComponent, Log, TEXT("Adding a new item of type %s"), *(EItemTypeToString(Item->ItemType)));
-	UE_LOG(LogInventoryComponent, Log, TEXT("In quantity %s"), *FString::FromInt(Quantity));
+	UE_LOG(LogInventoryComponent, Log, TEXT("In quantity %d"), Quantity);
 
 	if (SetItemsForItemType(Item->ItemType).IsValidIndex(IndexLocation))
 	{
@@ -77,8 +107,11 @@ F_InventoryItem* UInventoryComponent::AddItem(F_InventoryItem* Item, int IndexLo
 		UBaseItem* DefaultItem = Cast<UBaseItem>(UBaseItem::StaticClass()->GetDefaultObject(true));
 
 		int32 NewQuantity = ItemAtLocation->Quantity + Quantity;
+		UE_LOG(LogInventoryComponent, Log, TEXT("NewQuantity %d"), NewQuantity);
 		int32 QuantityClamped = FMath::Clamp(NewQuantity, 0, DefaultItem->StackSize);
+		UE_LOG(LogInventoryComponent, Log, TEXT("QuantityClamped %d"), QuantityClamped);
 		int32 DeltaQuantity = NewQuantity - FMath::Clamp(NewQuantity, 0, DefaultItem->StackSize);
+		UE_LOG(LogInventoryComponent, Log, TEXT("DeltaQuantity %d"), DeltaQuantity);
 
 		// Update member variables on the item st this particular slot
 		ItemAtLocation->Quantity = QuantityClamped;
@@ -323,7 +356,7 @@ int32 UInventoryComponent::FindAvailableLocation(F_InventoryItem* Item)
 	}
 
 	UE_LOG(LogInventoryComponent, Warning, TEXT("No suitable slot found."));
-	return -1;
+	return DEFAULT_INDEX_LOCATION;
 }
 
 TArray<F_InventoryItem>& UInventoryComponent::SetItemsForItemType(EItemType ItemType)
@@ -350,7 +383,7 @@ void UInventoryComponent::InitialiseInventory()
 {
 	// Initialise all arrays
 	TArray<TArray<F_InventoryItem>*> ItemArrays = { &Equipment, &QuestItems, &Consumables, &MiscellaneousItems };
-	TArray<int32> Capacities = { EquipmentCapacity, QuestItemsCapacity, ConsumablesCapacity, MiscellaneousItemsCapacity };
+	TArray<int32> Capacities = { EquipmentInitialCapacity, QuestItemsInitialCapacity, ConsumablesInitialCapacity, MiscellaneousItemsInitialCapacity };
 	for (int32 i = 0; i < ItemArrays.Num(); ++i)
 	{
 		InitialiseItemArray(*ItemArrays[i], Capacities[i]);
@@ -369,7 +402,7 @@ void UInventoryComponent::InitialiseInventory()
 
 }
 
-void UInventoryComponent::InitialiseItemArray(TArray<F_InventoryItem>& ItemArr, int32 Capacity)
+void UInventoryComponent::InitialiseItemArray(TArray<F_InventoryItem>& ItemArr, int32 Capacity, int32 Index)
 {
 	ItemArr.SetNum(Capacity);
 	for (int32 i = 0; i < Capacity; ++i)
@@ -377,7 +410,7 @@ void UInventoryComponent::InitialiseItemArray(TArray<F_InventoryItem>& ItemArr, 
 		ItemArr[i].ItemClass = UBaseItem::StaticClass();
 		ItemArr[i].Quantity = 0;
 		ItemArr[i].OwningInventory = this;
-		ItemArr[i].IndexLocation = i;
+		ItemArr[i].IndexLocation = i + Index;
 		ItemArr[i].ItemType = EItemType::EIT_None;
 	}
 }
@@ -414,13 +447,7 @@ F_InventoryItem& UInventoryComponent::GetSpecialItemByIndex(int32 Index)
 	}
 }
 
-// Called when the game starts
-void UInventoryComponent::BeginPlay()
-{
-	Super::BeginPlay();
 
-	InitialiseInventory();
-}
 
 
 // Called every frame
